@@ -1,4 +1,5 @@
 require 'commander'
+require 'yaml'
 
 module Terragov
   class Cli
@@ -31,6 +32,10 @@ module Terragov
 
       global_option('--extra STRING', String, 'Any additional arguments to pass, eg "--extra -target resource.foo"') do |extra|
         $extra = extra
+      end
+
+      global_option('--verbose', String, 'Extra verbosity') do |verbose|
+        $verbose = verbose
       end
 
     end
@@ -96,19 +101,26 @@ module Terragov
       return $extra if $extra
     end
 
+    def cmd_options
+      cmd_options_hash = {
+        "environment" => env,
+        "data_dir"    => data_dir,
+        "project"     => project,
+        "stack"       => stack,
+        "repo_dir"    => repo_dir,
+      }
+      return cmd_options_hash
+    end
 
     def run
       command :plan do |c|
         c.syntax = 'terragov plan'
         c.description = 'Runs a plan of your code'
         c.action do |args, options|
-          puts "plan"
-          puts data_dir
-          puts env
-          puts project
-          puts stack
-          puts repo_dir
-          puts extra
+          if options.verbose
+            puts "Running plan"
+            puts cmd_options.to_yaml
+          end
         end
       end
 
@@ -116,7 +128,10 @@ module Terragov
         c.syntax = 'terragov apply'
         c.description = 'Apply your code'
         c.action do |args, options|
-          puts "apply"
+          if options.verbose
+            puts "Running apply"
+            puts cmd_options.to_yaml
+          end
         end
       end
 
