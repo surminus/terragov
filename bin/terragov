@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require 'terragov/cli'
+
+Terragov::Cli.new.run
