@@ -120,11 +120,14 @@ module Terragov
       return cmd_options_hash
     end
 
-    def run_terraform_cmd(cmd)
+    def run_terraform_cmd(cmd, opt = nil)
       paths = Terragov::BuildPaths.new.base(cmd_options)
       varfiles = Terragov::BuildPaths.new.build_command(cmd_options)
       backend  = paths[:backend_file]
       project_dir = paths[:project_dir]
+      if opt
+        cmd = "#{cmd} #{opt}"
+      end
       Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir)
     end
 
@@ -168,6 +171,7 @@ module Terragov
       command :destroy do |c|
         c.syntax = 'terragov destroy'
         c.description = 'Destroy your selected project'
+        c.option '--force', 'Force destroy'
         c.action do |args, options|
           if options.verbose
             ENV['TERRAGOV_VERBOSE'] = "true"
@@ -179,7 +183,11 @@ module Terragov
             ENV['TERRAGOV_DRYRUN'] = "true"
           end
 
-          run_terraform_cmd(c.name)
+          if options.force
+            run_terraform_cmd("#{c.name} -force")
+          else
+            run_terraform_cmd(c.name)
+          end
         end
       end
 
