@@ -13,12 +13,16 @@ module Terragov
       program :version, Terragov::VERSION
       program :description, 'Wrapper for GOV.UK Terraform deployments.'
 
+      global_option('-c', "--config-file FILE", 'Specify a config file. Has less precedence than environment variables, which in turn have left precedence than CLI options') do |config_file|
+        $config_file = config_file
+      end
+
       global_option('-d', "--data-dir DIRECTORY", 'Location of the data directory') do |data_dir|
         $data_dir = data_dir
       end
 
       global_option( '-e', '--env STRING', String, 'Select environment') do |env|
-        $env = env
+        $environment = env
       end
 
       global_option(  '-p', '--project STRING', String, 'Name of the project') do |project|
@@ -47,23 +51,35 @@ module Terragov
 
     end
 
+    def load_config_file
+      if $config_file || ENV['TERRAGOV_CONFIG']
+        file = $config_file || ENV['TERRAGOV_CONFIG']
+        $values = YAML.load_file(File.expand_path(file))
+      end
+      return $values
+    end
+
     def data_dir
       error_message = "Must provided the data directory. See --help for details"
       if $data_dir
         return File.expand_path($data_dir)
       elsif ENV['TERRAGOV_DATA_DIR']
         return File.expand_path(ENV['TERRAGOV_DATA_DIR'])
+      elsif load_config_file['data_dir']
+        return File.expand_path(load_config_file['data_dir'])
       else
         abort(error_message)
       end
     end
 
-    def env
+    def environment
       error_message = "Must set AWS environment. Use --help for details"
-      if $env
-        return $env
+      if $environment
+        return $environment
       elsif ENV['TERRAGOV_ENVIRONMENT']
         return ENV['TERRAGOV_ENVIRONMENT']
+      elsif load_config_file['environment']
+        return load_config_file['environment']
       else
         abort(error_message)
       end
@@ -76,6 +92,8 @@ module Terragov
         return $project
       elsif ENV['TERRAGOV_PROJECT']
         return ENV['TERRAGOV_PROJECT']
+      elsif load_config_file['project']
+        return load_config_file['project']
       else
         abort(error_message)
       end
@@ -87,6 +105,8 @@ module Terragov
         return File.expand_path($repo_dir)
       elsif ENV['TERRAGOV_REPO_DIR']
         return File.expand_path(ENV['TERRAGOV_REPO_DIR'])
+      elsif load_config_file['repo_dir']
+        return File.expand_path(load_config_file['repo_dir'])
       else
         return File.expand_path('.')
       end
@@ -99,6 +119,8 @@ module Terragov
         return $stack
       elsif ENV['TERRAGOV_STACKNAME']
         return ENV['TERRAGOV_STACKNAME']
+      elsif load_config_file['stack']
+        return load_config_file['stack']
       else
         abort(error_message)
       end
@@ -110,7 +132,7 @@ module Terragov
 
     def cmd_options
       cmd_options_hash = {
-        "environment" => env,
+        "environment" => environment,
         "data_dir"    => data_dir,
         "project"     => project,
         "stack"       => stack,
@@ -138,7 +160,7 @@ module Terragov
         c.action do |args, options|
           if options.verbose
             ENV['TERRAGOV_VERBOSE'] = "true"
-            puts "Running #{cmd}"
+            puts "Planning..."
             puts cmd_options.to_yaml
           end
 
@@ -156,7 +178,7 @@ module Terragov
         c.action do |args, options|
           if options.verbose
             ENV['TERRAGOV_VERBOSE'] = "true"
-            puts "Running #{cmd}"
+            puts "Applying..."
             puts cmd_options.to_yaml
           end
 
@@ -175,7 +197,7 @@ module Terragov
         c.action do |args, options|
           if options.verbose
             ENV['TERRAGOV_VERBOSE'] = "true"
-            puts "Running #{cmd}"
+            puts "Destroying..."
             puts cmd_options.to_yaml
           end
 
