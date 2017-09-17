@@ -22,8 +22,8 @@ module Terragov
         $data_dir = data_dir
       end
 
-      global_option( '-e', '--env STRING', String, 'Select environment') do |env|
-        $environment = env
+      global_option( '-e', '--environment STRING', String, 'Select environment') do |environment|
+        $environment = environment
       end
 
       global_option(  '-p', '--project STRING', String, 'Name of the project') do |project|
@@ -56,8 +56,10 @@ module Terragov
       if $config_file || ENV['TERRAGOV_CONFIG_FILE']
         file = $config_file || ENV['TERRAGOV_CONFIG_FILE']
         $values = YAML.load_file(File.expand_path(file))
+        return $values
+      else
+        return false
       end
-      return $values
     end
 
     def data_dir
@@ -66,7 +68,7 @@ module Terragov
         return File.expand_path($data_dir)
       elsif ENV['TERRAGOV_DATA_DIR']
         return File.expand_path(ENV['TERRAGOV_DATA_DIR'])
-      elsif load_config_file['data_dir']
+      elsif load_config_file
         return File.expand_path(load_config_file['data_dir'])
       else
         abort(error_message)
@@ -79,7 +81,7 @@ module Terragov
         return $environment
       elsif ENV['TERRAGOV_ENVIRONMENT']
         return ENV['TERRAGOV_ENVIRONMENT']
-      elsif load_config_file['environment']
+      elsif load_config_file
         return load_config_file['environment']
       else
         abort(error_message)
@@ -93,7 +95,7 @@ module Terragov
         return $project
       elsif ENV['TERRAGOV_PROJECT']
         return ENV['TERRAGOV_PROJECT']
-      elsif load_config_file['project']
+      elsif load_config_file
         return load_config_file['project']
       else
         abort(error_message)
@@ -106,7 +108,7 @@ module Terragov
         return File.expand_path($repo_dir)
       elsif ENV['TERRAGOV_REPO_DIR']
         return File.expand_path(ENV['TERRAGOV_REPO_DIR'])
-      elsif load_config_file['repo_dir']
+      elsif load_config_file
         return File.expand_path(load_config_file['repo_dir'])
       else
         return File.expand_path('.')
@@ -120,7 +122,7 @@ module Terragov
         return $stack
       elsif ENV['TERRAGOV_STACK']
         return ENV['TERRAGOV_STACK']
-      elsif load_config_file['stack']
+      elsif load_config_file
         return load_config_file['stack']
       else
         abort(error_message)
