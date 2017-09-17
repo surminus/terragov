@@ -36,7 +36,7 @@ module Terragov
         $extra = extra
       end
 
-      global_option('--verbose', String, 'Extra verbosity') do |verbose|
+      global_option('--verbose', String, 'Verbose mode') do |verbose|
         $verbose = verbose
       end
 
@@ -46,8 +46,8 @@ module Terragov
       error_message = "Must provided the data directory. See --help for details"
       if $data_dir
         return File.expand_path($data_dir)
-      elsif ENV['GOVUK_AWS_DATA_DIR']
-        return File.expand_path(ENV['GOVUK_AWS_DATA_DIR'])
+      elsif ENV['TERRAGOV_DATA_DIR']
+        return File.expand_path(ENV['TERRAGOV_DATA_DIR'])
       else
         abort(error_message)
       end
@@ -57,8 +57,8 @@ module Terragov
       error_message = "Must set AWS environment. Use --help for details"
       if $env
         return $env
-      elsif ENV['GOVUK_AWS_ENV']
-        return ENV['GOVUK_AWS_ENV']
+      elsif ENV['TERRAGOV_ENVIRONMENT']
+        return ENV['TERRAGOV_ENVIRONMENT']
       else
         abort(error_message)
       end
@@ -69,8 +69,8 @@ module Terragov
 
       if $project
         return $project
-      elsif ENV['GOVUK_AWS_PROJECT']
-        return ENV['GOVUK_AWS_PROJECT']
+      elsif ENV['TERRAGOV_PROJECT']
+        return ENV['TERRAGOV_PROJECT']
       else
         abort(error_message)
       end
@@ -80,8 +80,8 @@ module Terragov
 
       if $repo_dir
         return File.expand_path($repo_dir)
-      elsif ENV['GOVUK_AWS_REPO_DIR']
-        return File.expand_path(ENV['GOVUK_AWS_REPO_DIR'])
+      elsif ENV['TERRAGOV_REPO_DIR']
+        return File.expand_path(ENV['TERRAGOV_REPO_DIR'])
       else
         return File.expand_path('.')
       end
@@ -92,8 +92,8 @@ module Terragov
 
       if $stack
         return $stack
-      elsif ENV['GOVUK_AWS_STACKNAME']
-        return ENV['GOVUK_AWS_STACKNAME']
+      elsif ENV['TERRAGOV_STACKNAME']
+        return ENV['TERRAGOV_STACKNAME']
       else
         abort(error_message)
       end
@@ -121,6 +121,7 @@ module Terragov
         c.description = 'Runs a plan of your code'
         c.action do |args, options|
           if options.verbose
+            ENV['TERRAGOV_VERBOSE'] = "true"
             puts "Running plan"
             puts cmd_options.to_yaml
           end

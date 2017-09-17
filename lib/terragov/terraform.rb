@@ -24,13 +24,13 @@ module Terragov
 
       full_command = "terraform #{command} #{vars}"
 
-      puts full_command if ENV['DEBUG']
+      puts "#{command} command: #{full_command}" if ENV['TERRAGOV_VERBOSE']
       abort("There was an issue running the command") unless system(full_command)
     end
 
     def init(backend_file)
       init_cmd = "terraform init -backend-config #{backend_file}"
-      puts init_cmd if ENV['DEBUG']
+      puts "init command: #{init_cmd}" if ENV['TERRAGOV_VERBOSE']
       abort("Issue running: terraform init -backend-config #{backend_file}") unless system(init_cmd)
     end
 
