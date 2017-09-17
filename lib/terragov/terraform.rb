@@ -22,7 +22,7 @@ module Terragov
       Dir.chdir directory
       init(backend)
 
-      full_command = "terraform #{command} #{vars}"
+      full_command = "bash -c 'terraform #{command} #{vars}'"
 
       puts "#{command} command: #{full_command}" if ENV['TERRAGOV_VERBOSE']
       abort("There was an issue running the command") unless system(full_command)
