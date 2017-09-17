@@ -33,7 +33,7 @@ module Terragov
         $stack = stack
       end
 
-      global_option('--extra STRING', String, 'Any additional arguments to pass in the following format: --extra \\-target resource.foo.') do |extra|
+      global_option('--extra STRING', String, 'Any additional arguments to pass in the following format: --extra \\\\-target resource.foo.') do |extra|
         $extra = extra
       end
 
