@@ -94,6 +94,7 @@ module Terragov
           end
         end
       end
+      $full_vars << $extra
       return $full_vars.join(" ")
     end
 
