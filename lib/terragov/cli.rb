@@ -1,5 +1,7 @@
 require 'commander'
 require 'yaml'
+require_relative 'buildpaths'
+require_relative 'terraform'
 
 module Terragov
   class Cli
@@ -43,9 +45,9 @@ module Terragov
     def data_dir
       error_message = "Must provided the data directory. See --help for details"
       if $data_dir
-        return $data_dir
+        return File.expand_path($data_dir)
       elsif ENV['GOVUK_AWS_DATA_DIR']
-        return ENV['GOVUK_AWS_DATA_DIR']
+        return File.expand_path(ENV['GOVUK_AWS_DATA_DIR'])
       else
         abort(error_message)
       end
@@ -77,9 +79,9 @@ module Terragov
     def repo_dir
 
       if $repo_dir
-        return $repo_dir
+        return File.expand_path($repo_dir)
       elsif ENV['GOVUK_AWS_REPO_DIR']
-        return ENV['GOVUK_AWS_REPO_DIR']
+        return File.expand_path(ENV['GOVUK_AWS_REPO_DIR'])
       else
         return File.expand_path('.')
       end
@@ -108,6 +110,7 @@ module Terragov
         "project"     => project,
         "stack"       => stack,
         "repo_dir"    => repo_dir,
+        "extra"       => extra,
       }
       return cmd_options_hash
     end
@@ -121,6 +124,12 @@ module Terragov
             puts "Running plan"
             puts cmd_options.to_yaml
           end
+
+          varfiles = Terragov::BuildPaths.new.vars(cmd_options)
+          backend  = Terragov::BuildPaths.new.backend
+          project_dir = Terragov::BuildPaths.new.project_dir
+          Terragov::Terraform.new.execute('plan', varfiles, backend, project_dir)
+
         end
       end
 
