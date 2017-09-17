@@ -99,8 +99,7 @@ module Terragov
         if data_validation(path)
           # TODO: write sops class
           if path == paths[:secret_project_data] || path == paths[:secret_common_project_data]
-            #@full_vars << "-var-file" + Terragov::Sops.new.decrypt(path)
-            #$full_vars << "-var-file #{path}"
+            $full_vars << "-var-file <(sops -d #{path})"
           else
             $full_vars << "-var-file #{path}"
           end

@@ -81,13 +81,13 @@ describe Terragov::BuildPaths do
 
   describe "build_command" do
     it "takes a hash of options and constructs a terraform command" do
-      expect(Terragov::BuildPaths.new.build_command(options)).to eq("-var-file spec/mocks/data/common/dev/common.tfvars -var-file spec/mocks/data/common/dev/mystack.tfvars -var-file spec/mocks/data/myproject/dev/common.tfvars -var-file spec/mocks/data/myproject/dev/mystack.tfvars ")
+      expect(Terragov::BuildPaths.new.build_command(options)).to eq("-var-file spec/mocks/data/common/dev/common.tfvars -var-file spec/mocks/data/common/dev/mystack.tfvars -var-file spec/mocks/data/myproject/dev/common.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/common.secret.tfvars) -var-file spec/mocks/data/myproject/dev/mystack.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/mystack.secret.tfvars) ")
     end
 
     it "if extra option is defined then append to command" do
       options["extra"] = "\\-target resource.foo"
 
-      expect(Terragov::BuildPaths.new.build_command(options)).to eq("-var-file spec/mocks/data/common/dev/common.tfvars -var-file spec/mocks/data/common/dev/mystack.tfvars -var-file spec/mocks/data/myproject/dev/common.tfvars -var-file spec/mocks/data/myproject/dev/mystack.tfvars -target resource.foo")
+      expect(Terragov::BuildPaths.new.build_command(options)).to eq("-var-file spec/mocks/data/common/dev/common.tfvars -var-file spec/mocks/data/common/dev/mystack.tfvars -var-file spec/mocks/data/myproject/dev/common.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/common.secret.tfvars) -var-file spec/mocks/data/myproject/dev/mystack.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/mystack.secret.tfvars) -target resource.foo")
     end
 
   end
