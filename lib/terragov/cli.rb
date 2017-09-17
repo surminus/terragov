@@ -119,6 +119,14 @@ module Terragov
       return cmd_options_hash
     end
 
+    def run_terraform_cmd(cmd)
+      paths = Terragov::BuildPaths.new.base(cmd_options)
+      varfiles = Terragov::BuildPaths.new.build_command(cmd_options)
+      backend  = paths[:backend_file]
+      project_dir = paths[:project_dir]
+      Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir)
+    end
+
     def run
       command :plan do |c|
         c.syntax = 'terragov plan'
@@ -126,7 +134,7 @@ module Terragov
         c.action do |args, options|
           if options.verbose
             ENV['TERRAGOV_VERBOSE'] = "true"
-            puts "Running plan"
+            puts "Running #{cmd}"
             puts cmd_options.to_yaml
           end
 
@@ -134,12 +142,7 @@ module Terragov
             ENV['TERRAGOV_DRYRUN'] = "true"
           end
 
-          paths = Terragov::BuildPaths.new.base(cmd_options)
-          varfiles = Terragov::BuildPaths.new.build_command(cmd_options)
-          backend  = paths[:backend_file]
-          project_dir = paths[:project_dir]
-          Terragov::Terraform.new.execute('plan', varfiles, backend, project_dir)
-
+          run_terraform_cmd(c.name)
         end
       end
 
@@ -148,9 +151,16 @@ module Terragov
         c.description = 'Apply your code'
         c.action do |args, options|
           if options.verbose
-            puts "Running apply"
+            ENV['TERRAGOV_VERBOSE'] = "true"
+            puts "Running #{cmd}"
             puts cmd_options.to_yaml
           end
+
+          if options.dry_run
+            ENV['TERRAGOV_DRYRUN'] = "true"
+          end
+
+          run_terraform_cmd(c.name)
         end
       end
 
@@ -158,7 +168,17 @@ module Terragov
         c.syntax = 'terragov destroy'
         c.description = 'Destroy your selected project'
         c.action do |args, options|
-          puts "destroy"
+          if options.verbose
+            ENV['TERRAGOV_VERBOSE'] = "true"
+            puts "Running #{cmd}"
+            puts cmd_options.to_yaml
+          end
+
+          if options.dry_run
+            ENV['TERRAGOV_DRYRUN'] = "true"
+          end
+
+          run_terraform_cmd(c.name)
         end
       end
 
