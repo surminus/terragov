@@ -2,6 +2,7 @@ require 'commander'
 require 'yaml'
 require_relative 'buildpaths'
 require_relative 'terraform'
+require_relative 'cleaner'
 
 module Terragov
   class Cli
@@ -185,8 +186,13 @@ module Terragov
       command :clean do |c|
         c.syntax = 'terragov clean'
         c.description = 'Clean your directory of any files terraform may have left lying around'
+        c.option '--force', 'Force removal of files'
         c.action do |args, options|
-          puts "clean"
+          if options.verbose
+            puts "Selecting directory #{repo_dir}"
+          end
+
+          Terragov::Cleaner.new.delete(repo_dir, /terraform\.tfstate\.backup/, options.force)
         end
       end
 
