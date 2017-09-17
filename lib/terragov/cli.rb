@@ -52,8 +52,8 @@ module Terragov
     end
 
     def load_config_file
-      if $config_file || ENV['TERRAGOV_CONFIG']
-        file = $config_file || ENV['TERRAGOV_CONFIG']
+      if $config_file || ENV['TERRAGOV_CONFIG_FILE']
+        file = $config_file || ENV['TERRAGOV_CONFIG_FILE']
         $values = YAML.load_file(File.expand_path(file))
       end
       return $values
@@ -117,8 +117,8 @@ module Terragov
 
       if $stack
         return $stack
-      elsif ENV['TERRAGOV_STACKNAME']
-        return ENV['TERRAGOV_STACKNAME']
+      elsif ENV['TERRAGOV_STACK']
+        return ENV['TERRAGOV_STACK']
       elsif load_config_file['stack']
         return load_config_file['stack']
       else
