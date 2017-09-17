@@ -125,9 +125,10 @@ module Terragov
             puts cmd_options.to_yaml
           end
 
-          varfiles = Terragov::BuildPaths.new.vars(cmd_options)
-          backend  = Terragov::BuildPaths.new.backend
-          project_dir = Terragov::BuildPaths.new.project_dir
+          paths = Terragov::BuildPaths.new.base(cmd_options)
+          varfiles = Terragov::BuildPaths.new.build_command(cmd_options)
+          backend  = paths[:backend_file]
+          project_dir = paths[:project_dir]
           Terragov::Terraform.new.execute('plan', varfiles, backend, project_dir)
 
         end
