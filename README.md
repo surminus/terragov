@@ -1,5 +1,7 @@
 # Terragov
 
+[![Build Status](https://travis-ci.org/surminus/terragov.svg)](https://travis-ci.org/surminus/terragov)
+
 ![Cockney deployments](https://github.com/surminus/terragov/blob/master/bricktop.jpg "Cockney deployments")
 
 GOV.UK use [Terraform](https://terraform.io) to deploy infrastructure. Originally a
