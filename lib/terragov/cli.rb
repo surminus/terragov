@@ -40,6 +40,10 @@ module Terragov
         $verbose = verbose
       end
 
+      global_option('--dry-run', String, 'Verbose mode', 'Output the commands to run, but do not run them') do |dryrun|
+        $dryrun = dryrun
+      end
+
     end
 
     def data_dir
@@ -124,6 +128,10 @@ module Terragov
             ENV['TERRAGOV_VERBOSE'] = "true"
             puts "Running plan"
             puts cmd_options.to_yaml
+          end
+
+          if options.dry_run
+            ENV['TERRAGOV_DRYRUN'] = "true"
           end
 
           paths = Terragov::BuildPaths.new.base(cmd_options)
