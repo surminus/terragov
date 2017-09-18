@@ -52,94 +52,76 @@ module Terragov
 
     end
 
-    def load_config_file
-      if $config_file || ENV['TERRAGOV_CONFIG_FILE']
-        file = $config_file || ENV['TERRAGOV_CONFIG_FILE']
-        $values = YAML.load_file(File.expand_path(file))
-        return $values
-      else
-        return false
-      end
-    end
-
     def data_dir
-      error_message = "Must provided the data directory. See --help for details"
-      if $data_dir
-        return File.expand_path($data_dir)
-      elsif ENV['TERRAGOV_DATA_DIR']
-        return File.expand_path(ENV['TERRAGOV_DATA_DIR'])
-      elsif load_config_file
-        return File.expand_path(load_config_file['data_dir'])
-      else
-        abort(error_message)
-      end
+      return $data_dir ? $data_dir : false
     end
 
     def environment
-      error_message = "Must set AWS environment. Use --help for details"
-      if $environment
-        return $environment
-      elsif ENV['TERRAGOV_ENVIRONMENT']
-        return ENV['TERRAGOV_ENVIRONMENT']
-      elsif load_config_file
-        return load_config_file['environment']
-      else
-        abort(error_message)
-      end
+      return $environment ? $environment : false
     end
 
     def project
-      error_message = "Must set AWS project. Use --help for details"
-
-      if $project
-        return $project
-      elsif ENV['TERRAGOV_PROJECT']
-        return ENV['TERRAGOV_PROJECT']
-      elsif load_config_file
-        return load_config_file['project']
-      else
-        abort(error_message)
-      end
+      return $project ? $project : false
     end
 
     def repo_dir
-
-      if $repo_dir
-        return File.expand_path($repo_dir)
-      elsif ENV['TERRAGOV_REPO_DIR']
-        return File.expand_path(ENV['TERRAGOV_REPO_DIR'])
-      elsif load_config_file
-        return File.expand_path(load_config_file['repo_dir'])
-      else
-        return File.expand_path('.')
-      end
+      return $repo_dir ? $repo_dir : false
     end
 
     def stack
-      error_message = "Must set AWS stackname. Use --help for details"
-
-      if $stack
-        return $stack
-      elsif ENV['TERRAGOV_STACK']
-        return ENV['TERRAGOV_STACK']
-      elsif load_config_file
-        return load_config_file['stack']
-      else
-        abort(error_message)
-      end
+      return $stack ? $stack : false
     end
 
     def extra
       return $extra if $extra
     end
 
+    def load_config_file
+      if $config_file || ENV['TERRAGOV_CONFIG_FILE']
+        file = $config_file || ENV['TERRAGOV_CONFIG_FILE']
+        $values = YAML.load_file(File.expand_path(file))
+        return $values
+      end
+    end
+
+    def config(option, file=false)
+      env_var = "TERRAGOV_#{option.upcase}"
+      error_message = "Must set #{option}. Use --help for details."
+      #require 'pry'; binding.pry
+      if public_send(option)
+        if file
+          return File.expand_path(public_send(option))
+        else
+          return public_send(option)
+        end
+      elsif ENV[env_var]
+        if file
+          return File.expand_path(ENV[env_var])
+        else
+          return ENV[env_var]
+        end
+      elsif !load_config_file.nil?
+        unless load_config_file[option].nil?
+          if file
+            return File.expand_path(load_config_file[option])
+          else
+            return load_config_file[option]
+          end
+        else
+          abort(error_message)
+        end
+      else
+        abort(error_message)
+      end
+    end
+
     def cmd_options
       cmd_options_hash = {
-        "environment" => environment,
-        "data_dir"    => data_dir,
-        "project"     => project,
-        "stack"       => stack,
-        "repo_dir"    => repo_dir,
+        "environment" => config('environment'),
+        "data_dir"    => config('data_dir', true),
+        "project"     => config('project'),
+        "stack"       => config('stack'),
+        "repo_dir"    => config('repo_dir', true),
         "extra"       => extra,
       }
       return cmd_options_hash
