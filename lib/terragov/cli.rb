@@ -14,7 +14,7 @@ module Terragov
       program :version, Terragov::VERSION
       program :description, 'Wrapper for GOV.UK Terraform deployments.'
 
-      global_option('-c', "--config-file FILE", 'Specify a config file. Has less precedence than environment variables, which in turn have left precedence than CLI options') do |config_file|
+      global_option('-c', "--config-file FILE", 'Specify a config file. Has less precedence than environment variables, which in turn have less precedence than CLI options') do |config_file|
         $config_file = config_file
       end
 
