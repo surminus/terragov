@@ -87,7 +87,6 @@ module Terragov
     def config(option, file=false)
       env_var = "TERRAGOV_#{option.upcase}"
       error_message = "Must set #{option}. Use --help for details."
-      #require 'pry'; binding.pry
       if public_send(option)
         if file
           return File.expand_path(public_send(option))
