@@ -1,13 +1,15 @@
-require "bundler/setup"
-require "terragov"
 require 'simplecov'
 require 'coveralls'
+require "bundler/setup"
 
+# Must load simplecov before we load any code
 SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter[
   SimpleCov::Formatter::HTMLFormatter,
   Coveralls::SimpleCov::Formatter
 ]
 SimpleCov.start
+
+require "terragov"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
