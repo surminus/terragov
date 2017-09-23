@@ -4,8 +4,6 @@ require 'highline'
 module Terragov
   class Cleaner
     def delete(path, pattern, force=false)
-      cli = HighLine.new
-
       files = Find.find(path).grep(pattern)
 
       if files.empty?
