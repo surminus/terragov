@@ -1,18 +1,23 @@
 module Terragov
   class Terraform
 
-    def package_check
-      unless system("which terraform >/dev/null")
-        abort("Must install terraform")
-      end
-
-      unless system("which sops >/dev/null")
-        abort("Must install sops")
+    def package_check(package)
+      unless system("which #{package} >/dev/null")
+        abort("Must install #{package}") unless HighLine.agree("Can't find #{package}. Install using Homebrew?")
+        if system("which brew >/dev/null")
+          system("brew install #{package}")
+        else
+          abort("Error: cannot find brew")
+        end
       end
     end
 
     def execute(command, vars, backend, directory, dryrun=false, verbose=false)
-      package_check
+      packages = [ 'terraform', 'sops' ]
+
+      packages.each do |pkg|
+        package_check(pkg)
+      end
 
       if command == 'init'
         puts "Running 'init' is not required as it is applied for each command"
