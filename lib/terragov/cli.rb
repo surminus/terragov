@@ -1,9 +1,11 @@
 require 'commander'
 require 'yaml'
+require 'highline'
 require_relative 'buildpaths'
 require_relative 'terraform'
 require_relative 'cleaner'
 require_relative 'version'
+require_relative 'git'
 
 module Terragov
   class Cli
@@ -18,7 +20,7 @@ module Terragov
         $config_file = config_file
       end
 
-      global_option('-d', "--data-dir DIRECTORY", 'Location of the data directory') do |data_dir|
+      global_option('-d', "--data-dir DIRECTORY", String, 'Location of the data directory') do |data_dir|
         $data_dir = data_dir
       end
 
@@ -42,14 +44,17 @@ module Terragov
         $extra = extra
       end
 
-      global_option('--verbose', String, 'Verbose mode') do |verbose|
+      global_option('--verbose', 'Verbose mode') do |verbose|
         $verbose = verbose
       end
 
-      global_option('--dry-run', String, 'Verbose mode', 'Output the commands to run, but do not run them') do |dryrun|
+      global_option('--dry-run', 'Dry run mode', 'Output the commands to run, but do not run them') do |dryrun|
         $dryrun = dryrun
       end
 
+      global_option('--skip-git-check', 'Skip git check', 'Do not check the status of git repositories') do |skip_git_check|
+        $skip_git_check = skip_git_check
+      end
     end
 
     def data_dir
@@ -76,6 +81,18 @@ module Terragov
       return $extra if $extra
     end
 
+    def verbose
+      return true ? $verbose : false
+    end
+
+    def dryrun
+      return true ? $dryrun : false
+    end
+
+    def skip_git_check
+      return true ? $skip_git_check : false
+    end
+
     def load_config_file
       if $config_file || ENV['TERRAGOV_CONFIG_FILE']
         file = $config_file || ENV['TERRAGOV_CONFIG_FILE']
@@ -84,7 +101,7 @@ module Terragov
       end
     end
 
-    def config(option, file=false)
+    def config(option, file=false, required=true)
       env_var = "TERRAGOV_#{option.upcase}"
       error_message = "Must set #{option}. Use --help for details."
       if public_send(option)
@@ -107,10 +124,18 @@ module Terragov
             return load_config_file[option]
           end
         else
-          abort(error_message)
+          if required
+            abort(error_message)
+          else
+            return false
+          end
         end
       else
-        abort(error_message)
+        if required
+          abort(error_message)
+        else
+          return false
+        end
       end
     end
 
@@ -126,15 +151,56 @@ module Terragov
       return cmd_options_hash
     end
 
+    def git_compare_repo_and_data(skip=false)
+      git_helper = Terragov::Git.new
+      # FIXME this is confusing as we want to check the repository git status from
+      # the root, but the "data" directory is one level down in the repository
+      repo_dir_root = cmd_options['repo_dir']
+      data_dir_root = File.expand_path(File.join(cmd_options['data_dir'], '../'))
+
+      repo_dir_branch = git_helper.branch_name(repo_dir_root)
+      data_dir_branch = git_helper.branch_name(data_dir_root)
+
+      branches = {
+        "repo_dir" => repo_dir_branch,
+        "data_dir" => data_dir_branch,
+      }
+
+      unless skip
+        branches.each do |name, branch|
+          unless branch =~ /^master$/
+            exit unless HighLine.agree("#{name} not on 'master' branch, continue on branch '#{branch}'?")
+          end
+        end
+
+        unless git_helper.compare_branch(repo_dir_root, data_dir_root)
+          puts "Warning: repo_dir(#{repo_dir_branch}) and data_dir(#{data_dir_branch}) on different branches"
+          exit unless HighLine.agree("Do you wish to continue?")
+        end
+      end
+    end
+
     def run_terraform_cmd(cmd, opt = nil)
       paths = Terragov::BuildPaths.new.base(cmd_options)
       varfiles = Terragov::BuildPaths.new.build_command(cmd_options)
       backend  = paths[:backend_file]
       project_dir = paths[:project_dir]
+
+      be_verbose = config('verbose', false, false)
+
+      do_dryrun = config('dryrun', false, false)
+
+      skip_check =  config('skip_git_check', false, false)
+      git_compare_repo_and_data(skip_check)
+
+      if be_verbose
+        puts cmd_options.to_yaml
+      end
+
       if opt
         cmd = "#{cmd} #{opt}"
       end
-      Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir)
+      Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir, do_dryrun, be_verbose)
     end
 
     def run
@@ -142,15 +208,6 @@ module Terragov
         c.syntax = 'terragov plan'
         c.description = 'Runs a plan of your code'
         c.action do |args, options|
-          if options.verbose
-            ENV['TERRAGOV_VERBOSE'] = "true"
-            puts "Planning..."
-            puts cmd_options.to_yaml
-          end
-
-          if options.dry_run
-            ENV['TERRAGOV_DRYRUN'] = "true"
-          end
 
           run_terraform_cmd(c.name)
         end
@@ -160,15 +217,6 @@ module Terragov
         c.syntax = 'terragov apply'
         c.description = 'Apply your code'
         c.action do |args, options|
-          if options.verbose
-            ENV['TERRAGOV_VERBOSE'] = "true"
-            puts "Applying..."
-            puts cmd_options.to_yaml
-          end
-
-          if options.dry_run
-            ENV['TERRAGOV_DRYRUN'] = "true"
-          end
 
           run_terraform_cmd(c.name)
         end
@@ -179,16 +227,6 @@ module Terragov
         c.description = 'Destroy your selected project'
         c.option '--force', 'Force destroy'
         c.action do |args, options|
-          if options.verbose
-            ENV['TERRAGOV_VERBOSE'] = "true"
-            puts "Destroying..."
-            puts cmd_options.to_yaml
-          end
-
-          if options.dry_run
-            ENV['TERRAGOV_DRYRUN'] = "true"
-          end
-
           if options.force
             run_terraform_cmd("#{c.name} -force")
           else
@@ -202,7 +240,7 @@ module Terragov
         c.description = 'Clean your directory of any files terraform may have left lying around'
         c.option '--force', 'Force removal of files'
         c.action do |args, options|
-          if options.verbose
+          if config('verbose', false, false)
             puts "Selecting directory #{repo_dir}"
           end
 

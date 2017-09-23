@@ -11,7 +11,7 @@ module Terragov
       end
     end
 
-    def execute(command, vars, backend, directory)
+    def execute(command, vars, backend, directory, dryrun=false, verbose=false)
       package_check
 
       if command == 'init'
@@ -20,24 +20,24 @@ module Terragov
       end
 
       Dir.chdir directory
-      init(backend)
+      init(backend, dryrun, verbose)
 
       full_command = "bash -c 'terraform #{command} #{vars}'"
 
-      if ENV['TERRAGOV_DRYRUN']
+      if dryrun
         puts full_command
       else
-        puts "#{command} command: #{full_command}" if ENV['TERRAGOV_VERBOSE']
+        puts "#{command} command: #{full_command}" if verbose
         abort("There was an issue running the command") unless system(full_command)
       end
     end
 
-    def init(backend_file)
+    def init(backend_file, dryrun=false, verbose=false)
       init_cmd = "terraform init -backend-config #{backend_file}"
-      if ENV['TERRAGOV_DRYRUN']
+      if dryrun
         puts init_cmd
       else
-        puts "init command: #{init_cmd}" if ENV['TERRAGOV_VERBOSE']
+        puts "init command: #{init_cmd}" if verbose
         abort("Issue running: terraform init -backend-config #{backend_file}") unless system(init_cmd)
       end
     end

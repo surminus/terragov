@@ -55,6 +55,13 @@ describe Terragov::Cli do
       ENV['TERRAGOV_CONFIG_FILE'] = nil
     end
 
+    it "if config file specified, but no expected value exists within config file, but is not required, do not abort but return false" do
+      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/mocks/badconfig.yml'
+      expect { Terragov::Cli.new.config('stack', false, false) }.to_not raise_error(SystemExit)
+      expect(Terragov::Cli.new.config('stack', false, false)).to be false
+      ENV['TERRAGOV_CONFIG_FILE'] = nil
+    end
+
     it "if no CLI option, env var or config file set, abort" do
       expect { Terragov::Cli.new.config('stack') }.to raise_error(SystemExit)
     end
