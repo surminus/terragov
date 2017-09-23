@@ -20,7 +20,7 @@ This tool is only meant to be used specifically against the project structure [d
 
 Run `--help` for details.
 
-There are several arguments to pass when running `apply`, `plan` or `destroy`:
+There are several **required** arguments to pass when running `apply`, `plan` or `destroy`:
 
 Argument | Description
 --- | ---
@@ -40,7 +40,7 @@ Use command line flags to pass the relevant argument. This has **highest** prece
 
 ### Environment variables
 
-Every command has an environment variable which can also be set. This has second **highest** precedence. The value is the name, in upper case, and prefixed with `TERRAGOV`. For example, to set `environment`:
+Every command has an environment variable which can also be set. This has **second highest** precedence. The value is the name, in upper case, and prefixed with `TERRAGOV`. For example, to set `environment`:
 
 `export TERRAGOV_ENVIRONMENT=integration`
 
@@ -59,6 +59,16 @@ stack: 'blue'
 repo_dir: '~/govuk/govuk-aws'
 data_dir: '~/govuk/govuk-aws-data/data'
 ```
+
+## Optional global arguments
+
+These may be set in the same way as described above, with the same precedence, but they are not required.
+
+Argument | Description
+--- | ---
+`verbose` | Be more noisy
+`dryrun` | CLI option is `--dry-run`, but config file and env var is `dryrun` and `TERRAGOV_DRYRUN` respectively
+`skip_git_check` | Do not compare branches between the repo and data directories
 
 ## Development
 
