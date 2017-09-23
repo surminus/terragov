@@ -1,0 +1,5 @@
+---
+environment: 'foo'
+stack: 'bar'
+repo_dir: 'spec/mocks'
+data_dir: 'spec/mocks/data'
