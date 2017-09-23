@@ -1,6 +1,6 @@
 # Terragov
 
-[![Build Status](https://travis-ci.org/surminus/terragov.svg?branch=master)](https://travis-ci.org/surminus/terragov)
+[![Build Status](https://travis-ci.org/surminus/terragov.svg?branch=master)](https://travis-ci.org/surminus/terragov) [![Gem Version](https://badge.fury.io/rb/terragov.svg)](https://badge.fury.io/rb/terragov) [![Coverage Status](https://coveralls.io/repos/github/surminus/terragov/badge.svg?branch=master)](https://coveralls.io/github/surminus/terragov?branch=master)
 
 ![Terragov](https://github.com/surminus/terragov/blob/master/bricktop.jpg "Terrible pun, guv")
 
