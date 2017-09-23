@@ -1,6 +1,8 @@
 # Terragov
 
-![Cockney deployments](https://github.com/surminus/terragov/blob/master/bricktop.jpg "Cockney deployments")
+[![Build Status](https://travis-ci.org/surminus/terragov.svg?branch=master)](https://travis-ci.org/surminus/terragov)
+
+![Terragov](https://github.com/surminus/terragov/blob/master/bricktop.jpg "Terrible pun, guv")
 
 GOV.UK use [Terraform](https://terraform.io) to deploy infrastructure. Originally a lightweight bash script was built to support our opinionated Terraform project structure, but it quickly added further functionality and I decided it would be nicer to use a tool written in a more complete language.
 
