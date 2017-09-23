@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "commander"
 
   spec.add_development_dependency "bundler"
-  spec.add_development_dependency "rake"
-  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "rake", "~> 10.5"
+  spec.add_development_dependency "rspec", "~> 3.6"
   spec.add_development_dependency "pry"
 end
