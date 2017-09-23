@@ -29,21 +29,20 @@ module Terragov
 
       full_command = "bash -c 'terraform #{command} #{vars}'"
 
-      if dryrun
-        puts full_command
-      else
-        puts "#{command} command: #{full_command}" if verbose
-        abort("There was an issue running the command") unless system(full_command)
-      end
+      run(full_command, dryrun, verbose)
     end
 
     def init(backend_file, dryrun=false, verbose=false)
       init_cmd = "terraform init -backend-config #{backend_file}"
+      run(init_cmd, dryrun, verbose)
+    end
+
+    def run(command, dryrun=false, verbose=false)
       if dryrun
-        puts init_cmd
+        puts command
       else
-        puts "init command: #{init_cmd}" if verbose
-        abort("Issue running: terraform init -backend-config #{backend_file}") unless system(init_cmd)
+        puts command if verbose
+        abort("There was an issue running the command: #{command}") unless system(full_command)
       end
     end
 
