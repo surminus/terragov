@@ -16,27 +16,27 @@ module Terragov
       program :version, Terragov::VERSION
       program :description, 'Wrapper for GOV.UK Terraform deployments.'
 
-      global_option('-c', "--config-file FILE", 'Specify a config file. Has less precedence than environment variables, which in turn have less precedence than CLI options') do |config_file|
+      global_option('-c', '--config-file FILE', 'Specify a config file. Has less precedence than environment variables, which in turn have less precedence than CLI options') do |config_file|
         $config_file = config_file
       end
 
-      global_option('-d', "--data-dir DIRECTORY", String, 'Location of the data directory') do |data_dir|
+      global_option('-d', '--data-dir DIRECTORY', String, 'Location of the data directory') do |data_dir|
         $data_dir = data_dir
       end
 
-      global_option( '-e', '--environment STRING', String, 'Select environment') do |environment|
+      global_option('-e', '--environment STRING', String, 'Select environment') do |environment|
         $environment = environment
       end
 
-      global_option(  '-p', '--project STRING', String, 'Name of the project') do |project|
+      global_option('-p', '--project STRING', String, 'Name of the project') do |project|
         $project = project
       end
 
-      global_option( '-r', '--repo-dir DIRECTORY', String, 'Location of the main terraform repository') do |repo_dir|
+      global_option('-r', '--repo-dir DIRECTORY', String, 'Location of the main terraform repository') do |repo_dir|
         $repo_dir = repo_dir
       end
 
-      global_option( '-s', '--stack STRING', String, 'Name of the stack') do |stack|
+      global_option('-s', '--stack STRING', String, 'Name of the stack') do |stack|
         $stack = stack
       end
 
@@ -58,23 +58,23 @@ module Terragov
     end
 
     def data_dir
-      return $data_dir ? $data_dir : false
+      $data_dir ? $data_dir : false
     end
 
     def environment
-      return $environment ? $environment : false
+      $environment ? $environment : false
     end
 
     def project
-      return $project ? $project : false
+      $project ? $project : false
     end
 
     def repo_dir
-      return $repo_dir ? $repo_dir : false
+      $repo_dir ? $repo_dir : false
     end
 
     def stack
-      return $stack ? $stack : false
+      $stack ? $stack : false
     end
 
     def extra
@@ -82,26 +82,26 @@ module Terragov
     end
 
     def verbose
-      return true ? $verbose : false
+      true ? $verbose : false
     end
 
     def dryrun
-      return true ? $dryrun : false
+      true ? $dryrun : false
     end
 
     def skip_git_check
-      return true ? $skip_git_check : false
+      true ? $skip_git_check : false
     end
 
     def load_config_file
       if $config_file || ENV['TERRAGOV_CONFIG_FILE']
         file = $config_file || ENV['TERRAGOV_CONFIG_FILE']
         $values = YAML.load_file(File.expand_path(file))
-        return $values
+        $values
       end
     end
 
-    def config(option, file=false, required=true)
+    def config(option, file = false, required = true)
       env_var = "TERRAGOV_#{option.upcase}"
       error_message = "Must set #{option}. Use --help for details."
       if public_send(option)
@@ -117,17 +117,17 @@ module Terragov
           return ENV[env_var]
         end
       elsif !load_config_file.nil?
-        unless load_config_file[option].nil?
-          if file
-            return File.expand_path(load_config_file[option])
-          else
-            return load_config_file[option]
-          end
-        else
+        if load_config_file[option].nil?
           if required
             abort(error_message)
           else
             return false
+          end
+        else
+          if file
+            return File.expand_path(load_config_file[option])
+          else
+            return load_config_file[option]
           end
         end
       else
@@ -141,19 +141,19 @@ module Terragov
 
     def cmd_options
       cmd_options_hash = {
-        "environment" => config('environment'),
-        "data_dir"    => config('data_dir', true),
-        "project"     => config('project'),
-        "stack"       => config('stack'),
-        "repo_dir"    => config('repo_dir', true),
-        "extra"       => extra,
+        'environment' => config('environment'),
+        'data_dir'    => config('data_dir', true),
+        'project'     => config('project'),
+        'stack'       => config('stack'),
+        'repo_dir'    => config('repo_dir', true),
+        'extra'       => extra
       }
-      return cmd_options_hash
+      cmd_options_hash
     end
 
-    def git_compare_repo_and_data(skip=false)
+    def git_compare_repo_and_data(skip = false)
       git_helper = Terragov::Git.new
-      # FIXME this is confusing as we want to check the repository git status from
+      # FIXME: this is confusing as we want to check the repository git status from
       # the root, but the "data" directory is one level down in the repository
       repo_dir_root = cmd_options['repo_dir']
       data_dir_root = File.expand_path(File.join(cmd_options['data_dir'], '../'))
@@ -162,8 +162,8 @@ module Terragov
       data_dir_branch = git_helper.branch_name(data_dir_root)
 
       branches = {
-        "repo_dir" => repo_dir_branch,
-        "data_dir" => data_dir_branch,
+        'repo_dir' => repo_dir_branch,
+        'data_dir' => data_dir_branch
       }
 
       unless skip
@@ -175,7 +175,7 @@ module Terragov
 
         unless git_helper.compare_branch(repo_dir_root, data_dir_root)
           puts "Warning: repo_dir(#{repo_dir_branch}) and data_dir(#{data_dir_branch}) on different branches"
-          exit unless HighLine.agree("Do you wish to continue?")
+          exit unless HighLine.agree('Do you wish to continue?')
         end
       end
     end
@@ -190,16 +190,12 @@ module Terragov
 
       do_dryrun = config('dryrun', false, false)
 
-      skip_check =  config('skip_git_check', false, false)
+      skip_check = config('skip_git_check', false, false)
       git_compare_repo_and_data(skip_check)
 
-      if be_verbose
-        puts cmd_options.to_yaml
-      end
+      puts cmd_options.to_yaml if be_verbose
 
-      if opt
-        cmd = "#{cmd} #{opt}"
-      end
+      cmd = "#{cmd} #{opt}" if opt
       Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir, do_dryrun, be_verbose)
     end
 
@@ -207,8 +203,7 @@ module Terragov
       command :plan do |c|
         c.syntax = 'terragov plan'
         c.description = 'Runs a plan of your code'
-        c.action do |args, options|
-
+        c.action do |_args, _options|
           run_terraform_cmd(c.name)
         end
       end
@@ -216,8 +211,7 @@ module Terragov
       command :apply do |c|
         c.syntax = 'terragov apply'
         c.description = 'Apply your code'
-        c.action do |args, options|
-
+        c.action do |_args, _options|
           run_terraform_cmd(c.name)
         end
       end
@@ -226,7 +220,7 @@ module Terragov
         c.syntax = 'terragov destroy'
         c.description = 'Destroy your selected project'
         c.option '--force', 'Force destroy'
-        c.action do |args, options|
+        c.action do |_args, options|
           if options.force
             run_terraform_cmd("#{c.name} -force")
           else
@@ -239,7 +233,7 @@ module Terragov
         c.syntax = 'terragov clean'
         c.description = 'Clean your directory of any files terraform may have left lying around'
         c.option '--force', 'Force removal of files'
-        c.action do |args, options|
+        c.action do |_args, options|
           if config('verbose', false, false)
             puts "Selecting directory #{repo_dir}"
           end

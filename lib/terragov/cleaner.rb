@@ -3,7 +3,7 @@ require 'highline'
 
 module Terragov
   class Cleaner
-    def delete(path, pattern, force=false)
+    def delete(path, pattern, force = false)
       files = Find.find(path).grep(pattern)
 
       if files.empty?
@@ -24,7 +24,7 @@ module Terragov
       files.each do |file|
         File.delete(File.expand_path(file))
       end
-      puts "Done"
+      puts 'Done'
     end
   end
 end
