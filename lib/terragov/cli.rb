@@ -238,7 +238,14 @@ module Terragov
             puts "Selecting directory #{repo_dir}"
           end
 
-          Terragov::Cleaner.new.delete(repo_dir, /terraform\.tfstate\.backup/, options.force)
+          files_to_delete = [
+            /\.terraform/,
+            /terraform\.tfstate\.backup/,
+          ]
+
+          path = config('repo_dir', true)
+
+          Terragov::Cleaner.new.delete(path, files_to_delete, options.force)
         end
       end
 

@@ -20,6 +20,15 @@ This tool is only meant to be used specifically against the project structure [d
 
 Run `--help` for details.
 
+You can run the following commands:
+
+Command | Description
+--- | ---
+`plan` | Plan Terraform resources
+`apply` | Apply Terraform changes
+`delete` | Delete Terraform resources
+`clean` | Delete any files that have been left by Terraform
+
 There are several **required** arguments to pass when running `apply`, `plan` or `destroy`:
 
 Argument | Description

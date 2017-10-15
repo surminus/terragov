@@ -3,11 +3,11 @@ require 'spec_helper'
 describe Terragov::Cleaner do
   describe 'delete' do
     path = File.expand_path('spec/mocks')
-    pattern = /foo\.txt/
+    pattern = [/foo\.txt/]
     test_file = File.join(path, 'foo.txt')
 
-    it 'should exit if no matching files found' do
-      expect { Terragov::Cleaner.new.delete(path, 'some_fake_pattern', true) }.to raise_error(SystemExit)
+    it 'should move on if no matching files found' do
+      expect { Terragov::Cleaner.new.delete(path, ['some_fake_pattern'], true) }.to_not raise_error(SystemExit)
     end
 
     it 'should delete files matching pattern in a given path (with force option)' do
