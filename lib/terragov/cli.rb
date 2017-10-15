@@ -239,7 +239,7 @@ module Terragov
           end
 
           files_to_delete = [
-            /\.terraform/,
+            /\.terraform$/,
             /terraform\.tfstate\.backup/,
           ]
 

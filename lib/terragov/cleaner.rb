@@ -25,7 +25,13 @@ module Terragov
         end
 
         files.each do |file|
-          File.delete(File.expand_path(file))
+          file = File.expand_path(file)
+          if Dir.exist?(file)
+            # No way to force delete with native Ruby Dir class
+            system("rm -rf #{file}")
+          else
+            File.delete(file)
+          end
         end
         puts 'Done'
       end
