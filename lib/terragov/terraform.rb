@@ -41,7 +41,7 @@ module Terragov
         puts command
       else
         puts command if verbose
-        abort("There was an issue running the command: #{command}") unless system(full_command)
+        abort("There was an issue running the command: #{command}") unless system(command)
       end
     end
   end
