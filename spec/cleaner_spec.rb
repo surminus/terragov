@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Terragov::Cleaner do
   describe 'delete' do
-    path = File.expand_path('spec/mocks')
+    path = File.expand_path('spec/stub')
     pattern = [/foo\.txt/]
     test_file = File.join(path, 'foo.txt')
 

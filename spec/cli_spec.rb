@@ -5,18 +5,18 @@ describe Terragov::Cli do
     mock_hash = {
       'environment' => 'foo',
       'stack'       => 'bar',
-      'repo_dir'    => 'spec/mocks',
-      'data_dir'    => 'spec/mocks/data'
+      'repo_dir'    => 'spec/stub',
+      'data_dir'    => 'spec/stub/data'
     }
     it 'It returns a hash of values when defined from an env var' do
-      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/mocks/myconfig.yml'
+      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
       config = Terragov::Cli.new.load_config_file
       expect(config).to include(mock_hash)
       ENV['TERRAGOV_CONFIG_FILE'] = nil
     end
 
     it 'It returns a hash of values when defined by CLI option' do
-      $config_file = 'spec/mocks/myconfig.yml'
+      $config_file = 'spec/stub/myconfig.yml'
       config = Terragov::Cli.new.load_config_file
       expect(config).to include(mock_hash)
       $config_file = nil
@@ -31,7 +31,7 @@ describe Terragov::Cli do
     end
 
     it 'if set from CLI options and is a file, it should return correct value' do
-      $repo_dir = 'spec/mocks'
+      $repo_dir = 'spec/stub'
       expected = File.expand_path($repo_dir)
       expect(Terragov::Cli.new.config('repo_dir', true)).to eq(expected)
       $repo_dir = nil
@@ -44,19 +44,19 @@ describe Terragov::Cli do
     end
 
     it 'if config file specified, and value exists within config file, return correct value' do
-      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/mocks/myconfig.yml'
+      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
       expect(Terragov::Cli.new.config('stack')).to eq('bar')
       ENV['TERRAGOV_CONFIG_FILE'] = nil
     end
 
     it 'if config file specified, but no expected value exists within config file, abort' do
-      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/mocks/badconfig.yml'
+      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
       expect { Terragov::Cli.new.config('stack') }.to raise_error(SystemExit)
       ENV['TERRAGOV_CONFIG_FILE'] = nil
     end
 
     it 'if config file specified, but no expected value exists within config file, but is not required, do not abort but return false' do
-      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/mocks/badconfig.yml'
+      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
       expect { Terragov::Cli.new.config('stack', false, false) }.to_not raise_error(SystemExit)
       expect(Terragov::Cli.new.config('stack', false, false)).to be false
       ENV['TERRAGOV_CONFIG_FILE'] = nil

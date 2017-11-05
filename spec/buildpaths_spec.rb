@@ -3,8 +3,8 @@ require 'spec_helper'
 describe Terragov::BuildPaths do
   options = {
     'environment' => 'dev',
-    'data_dir'    => 'spec/mocks/data',
-    'repo_dir'    => 'spec/mocks',
+    'data_dir'    => 'spec/stub/data',
+    'repo_dir'    => 'spec/stub',
     'stack'       => 'mystack',
     'project'     => 'myproject',
     'extra'       => ''
@@ -13,21 +13,21 @@ describe Terragov::BuildPaths do
     it 'Takes options in a hash format and produces a hash of paths' do
       base_paths = Terragov::BuildPaths.new.base(options)
       expect(base_paths).to include(
-        terraform_dir: 'spec/mocks/terraform',
-        project_dir: 'spec/mocks/terraform/projects/myproject',
-        common_data_dir: 'spec/mocks/data/common/dev',
-        common_data: 'spec/mocks/data/common/dev/common.tfvars',
-        stack_common_data: 'spec/mocks/data/common/dev/mystack.tfvars',
-        project_data_dir: 'spec/mocks/data/myproject/dev',
-        common_project_data: 'spec/mocks/data/myproject/dev/common.tfvars',
-        secret_common_project_data: 'spec/mocks/data/myproject/dev/common.secret.tfvars',
-        stack_project_data: 'spec/mocks/data/myproject/dev/mystack.tfvars',
-        secret_project_data: 'spec/mocks/data/myproject/dev/mystack.secret.tfvars'
+        terraform_dir: 'spec/stub/terraform',
+        project_dir: 'spec/stub/terraform/projects/myproject',
+        common_data_dir: 'spec/stub/data/common/dev',
+        common_data: 'spec/stub/data/common/dev/common.tfvars',
+        stack_common_data: 'spec/stub/data/common/dev/mystack.tfvars',
+        project_data_dir: 'spec/stub/data/myproject/dev',
+        common_project_data: 'spec/stub/data/myproject/dev/common.tfvars',
+        secret_common_project_data: 'spec/stub/data/myproject/dev/common.secret.tfvars',
+        stack_project_data: 'spec/stub/data/myproject/dev/mystack.tfvars',
+        secret_project_data: 'spec/stub/data/myproject/dev/mystack.secret.tfvars'
       )
     end
   end
 
-  let(:common_data_file) { 'spec/mocks/data/common/dev/common.tfvars' }
+  let(:common_data_file) { 'spec/stub/data/common/dev/common.tfvars' }
 
   describe 'data_validation' do
     it 'by default returns true if file or directory exist' do
@@ -46,19 +46,19 @@ describe Terragov::BuildPaths do
   describe 'data_paths' do
     it 'takes a hash and returns array of paths' do
       expect(Terragov::BuildPaths.new.data_paths(options)).to include(
-        'spec/mocks/data/common/dev/common.tfvars',
-        'spec/mocks/data/common/dev/mystack.tfvars',
-        'spec/mocks/data/myproject/dev/common.tfvars',
-        'spec/mocks/data/myproject/dev/common.secret.tfvars',
-        'spec/mocks/data/myproject/dev/mystack.tfvars',
-        'spec/mocks/data/myproject/dev/mystack.secret.tfvars'
+        'spec/stub/data/common/dev/common.tfvars',
+        'spec/stub/data/common/dev/mystack.tfvars',
+        'spec/stub/data/myproject/dev/common.tfvars',
+        'spec/stub/data/myproject/dev/common.secret.tfvars',
+        'spec/stub/data/myproject/dev/mystack.tfvars',
+        'spec/stub/data/myproject/dev/mystack.secret.tfvars'
       )
     end
   end
 
   real_var_files = [
-    'spec/mocks/data/common/dev/common.tfvars',
-    'spec/mocks/data/common/dev/mystack.tfvars',
+    'spec/stub/data/common/dev/common.tfvars',
+    'spec/stub/data/common/dev/mystack.tfvars',
     'some/fake/file.foo'
   ]
 
@@ -82,7 +82,7 @@ describe Terragov::BuildPaths do
     # Set some invalid paths
     bad_options = {
       'environment' => 'dev',
-      'data_dir'    => 'spec/mocks/data',
+      'data_dir'    => 'spec/stub/data',
       'repo_dir'    => 'some/fake/dir',
       'stack'       => 'mystack',
       'project'     => 'fake-project',
@@ -93,7 +93,7 @@ describe Terragov::BuildPaths do
     end
 
     # Reset repo_dir to valid directory
-    bad_options[:repo_dir] = 'spec/mocks'
+    bad_options[:repo_dir] = 'spec/stub'
     it 'aborts if project directory does not exist' do
       expect { Terragov::BuildPaths.new.build_command(bad_options) }.to raise_error(SystemExit)
     end
@@ -105,13 +105,13 @@ describe Terragov::BuildPaths do
     end
 
     it 'takes a hash of options and constructs a terraform command' do
-      expect(Terragov::BuildPaths.new.build_command(options)).to eq('-var-file spec/mocks/data/common/dev/common.tfvars -var-file spec/mocks/data/common/dev/mystack.tfvars -var-file spec/mocks/data/myproject/dev/common.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/common.secret.tfvars) -var-file spec/mocks/data/myproject/dev/mystack.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/mystack.secret.tfvars) ')
+      expect(Terragov::BuildPaths.new.build_command(options)).to eq('-var-file spec/stub/data/common/dev/common.tfvars -var-file spec/stub/data/common/dev/mystack.tfvars -var-file spec/stub/data/myproject/dev/common.tfvars -var-file <(sops -d spec/stub/data/myproject/dev/common.secret.tfvars) -var-file spec/stub/data/myproject/dev/mystack.tfvars -var-file <(sops -d spec/stub/data/myproject/dev/mystack.secret.tfvars) ')
     end
 
     it 'if extra option is defined then append to command' do
       options['extra'] = '\\-target resource.foo'
 
-      expect(Terragov::BuildPaths.new.build_command(options)).to eq('-var-file spec/mocks/data/common/dev/common.tfvars -var-file spec/mocks/data/common/dev/mystack.tfvars -var-file spec/mocks/data/myproject/dev/common.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/common.secret.tfvars) -var-file spec/mocks/data/myproject/dev/mystack.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/mystack.secret.tfvars) -target resource.foo')
+      expect(Terragov::BuildPaths.new.build_command(options)).to eq('-var-file spec/stub/data/common/dev/common.tfvars -var-file spec/stub/data/common/dev/mystack.tfvars -var-file spec/stub/data/myproject/dev/common.tfvars -var-file <(sops -d spec/stub/data/myproject/dev/common.secret.tfvars) -var-file spec/stub/data/myproject/dev/mystack.tfvars -var-file <(sops -d spec/stub/data/myproject/dev/mystack.secret.tfvars) -target resource.foo')
     end
   end
 end

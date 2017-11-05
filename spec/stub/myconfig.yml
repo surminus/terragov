@@ -1,0 +1,5 @@
+---
+environment: 'foo'
+stack: 'bar'
+repo_dir: 'spec/stub'
+data_dir: 'spec/stub/data'
