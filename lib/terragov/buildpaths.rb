@@ -39,19 +39,11 @@ module Terragov
       }
     end
 
-    def data_validation(path, required = false)
-      if required
-        if File.exist?(path)
-          true
-        else
-          abort("Invalid directory or file: #{path}")
-        end
+    def data_validation(path)
+      if File.exist?(path)
+        true
       else
-        if File.exist?(path)
-          true
-        else
-          false
-        end
+        false
       end
     end
 
@@ -88,9 +80,11 @@ module Terragov
 
     def build_command(options = {})
       paths = base(options)
-      abort('Cannot find main repository') unless data_validation(paths[:terraform_dir], true)
+      abort("Error: cannot find main repository (#{paths[:terraform_dir]})") unless data_validation(paths[:terraform_dir])
+      abort("Error: cannot find project (#{paths[:project_dir]}).") unless data_validation(paths[:project_dir])
+      abort("Error: cannot find backend file (#{paths[:backend_file]}).\nDid you specify the right stack?") unless data_validation(paths[:backend_file])
       var_paths = data_paths(options)
-      abort("Can't find any var files") unless check_var_files(var_paths)
+      abort("Error: cannot find any var files") unless check_var_files(var_paths)
 
       $full_vars = []
       data_paths(options).each do |path|

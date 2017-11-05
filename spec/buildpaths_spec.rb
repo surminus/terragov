@@ -79,6 +79,31 @@ describe Terragov::BuildPaths do
   end
 
   describe 'build_command' do
+    # Set some invalid paths
+    bad_options = {
+      'environment' => 'dev',
+      'data_dir'    => 'spec/mocks/data',
+      'repo_dir'    => 'some/fake/dir',
+      'stack'       => 'mystack',
+      'project'     => 'fake-project',
+      'extra'       => ''
+    }
+    it 'aborts if terraform directory does not exist' do
+      expect { Terragov::BuildPaths.new.build_command(bad_options) }.to raise_error(SystemExit)
+    end
+
+    # Reset repo_dir to valid directory
+    bad_options[:repo_dir] = 'spec/mocks'
+    it 'aborts if project directory does not exist' do
+      expect { Terragov::BuildPaths.new.build_command(bad_options) }.to raise_error(SystemExit)
+    end
+
+    # Reset project to valid project
+    bad_options[:project_dir] = 'myproject'
+    it 'aborts if backend file does not exist' do
+      expect { Terragov::BuildPaths.new.build_command(bad_options) }.to raise_error(SystemExit)
+    end
+
     it 'takes a hash of options and constructs a terraform command' do
       expect(Terragov::BuildPaths.new.build_command(options)).to eq('-var-file spec/mocks/data/common/dev/common.tfvars -var-file spec/mocks/data/common/dev/mystack.tfvars -var-file spec/mocks/data/myproject/dev/common.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/common.secret.tfvars) -var-file spec/mocks/data/myproject/dev/mystack.tfvars -var-file <(sops -d spec/mocks/data/myproject/dev/mystack.secret.tfvars) ')
     end
