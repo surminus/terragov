@@ -26,6 +26,10 @@ module Terragov
       Dir.chdir directory
       init(backend, dryrun, verbose)
 
+      if command == 'plan'
+        command = 'plan -detailed-exitcode'
+      end
+
       full_command = "bash -c 'terraform #{command} #{vars}'"
 
       run(full_command, dryrun, verbose)
@@ -41,7 +45,15 @@ module Terragov
         puts command
       else
         puts command if verbose
-        abort("There was an issue running the command: #{command}") unless system(command)
+        system(command)
+
+        # Catch the output of "-detailed-exitcode"
+        if $?.exitstatus == 2
+          puts "Command completed successfully, but with updates available to apply"
+          exit 2
+        elsif $?.exitstatus != (0 or 2)
+          abort("There was an issue running command: #{command}")
+        end
       end
     end
   end
