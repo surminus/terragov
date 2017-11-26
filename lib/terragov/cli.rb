@@ -137,7 +137,7 @@ module Terragov
     end
 
     def cmd_options
-      cmd_options_hash = {
+      {
         'environment' => config('environment'),
         'data_dir'    => config('data_dir', true),
         'project'     => config('project'),
@@ -145,7 +145,6 @@ module Terragov
         'repo_dir'    => config('repo_dir', true),
         'extra'       => extra
       }
-      cmd_options_hash
     end
 
     def git_compare_repo_and_data(skip = false)
