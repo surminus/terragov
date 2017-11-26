@@ -7,7 +7,7 @@ describe Terragov::Cleaner do
     test_file = File.join(path, 'foo.txt')
 
     it 'should move on if no matching files found' do
-      expect { Terragov::Cleaner.new.delete(path, ['some_fake_pattern'], true) }.to_not raise_error(SystemExit)
+      expect { Terragov::Cleaner.new.delete(path, ['some_fake_pattern'], true) }.to_not raise_error
     end
 
     it 'should delete files matching pattern in a given path (with force option)' do
