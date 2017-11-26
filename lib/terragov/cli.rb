@@ -96,8 +96,7 @@ module Terragov
     def load_config_file
       if $config_file || ENV['TERRAGOV_CONFIG_FILE']
         file = $config_file || ENV['TERRAGOV_CONFIG_FILE']
-        $values = YAML.load_file(File.expand_path(file))
-        $values
+        YAML.load_file(File.expand_path(file))
       end
     end
 
