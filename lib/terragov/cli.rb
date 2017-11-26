@@ -170,16 +170,21 @@ module Terragov
       end
     end
 
-    def cmd_options
-      {
-        # Always load the project name first
-        'project'     => config('project'),
+    def cmd_options(deployment = false)
+      cmd_hash = {}
+
+      # Always load the project name first
+      unless deployment
+        cmd_hash = { 'project' => config('project') }
+      end
+
+      cmd_hash.merge({
         'environment' => config('environment'),
         'data_dir'    => config('data_dir', true),
         'stack'       => config('stack'),
         'repo_dir'    => config('repo_dir', true),
         'extra'       => extra
-      }
+      })
     end
 
     def git_compare_repo_and_data(skip = false)
@@ -211,7 +216,7 @@ module Terragov
       end
     end
 
-    def run_terraform_cmd(cmd, opt = nil)
+    def run_terraform_cmd(cmd, opt = nil, deployment = false)
       paths = Terragov::BuildPaths.new.base(cmd_options)
       varfiles = Terragov::BuildPaths.new.build_command(cmd_options)
       backend  = paths[:backend_file]
@@ -221,13 +226,42 @@ module Terragov
 
       do_dryrun = config('dryrun', false, false)
 
-      skip_check = config('skip_git_check', false, false)
-      git_compare_repo_and_data(skip_check)
+      unless deployment
+        skip_check = config('skip_git_check', false, false)
+        git_compare_repo_and_data(skip_check)
+      end
 
       puts cmd_options.to_yaml if be_verbose
 
       cmd = "#{cmd} #{opt}" if opt
       Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir, do_dryrun, be_verbose)
+    end
+
+    def run_deployment(file, group, command)
+      abort("Must set deployment file: --file") unless file
+      abort("Must set command to run: --command") unless command
+      abort("Cannot find deployment file: #{file}") unless File.exist?(file)
+
+      deployment_file = YAML.load_file(file)
+      deployment_config = deployment_file[group]
+
+      if deployment_config.nil?
+        abort("Deployment configuration must be an array of projects to run")
+      end
+
+      if command == 'plan' || command == 'apply'
+        deployment_config.each do |proj|
+          $project = proj
+          run_terraform_cmd(command, nil, true)
+        end
+      elsif command == 'destroy'
+        deployment_config.reverse.each do |proj|
+          $project = proj
+          run_terraform_cmd(command, nil, true)
+        end
+      else
+        abort("Command must be apply, plan or destroy")
+      end
     end
 
     def run
@@ -257,6 +291,20 @@ module Terragov
           else
             run_terraform_cmd(c.name)
           end
+        end
+      end
+
+      command :deploy do |c|
+        c.syntax = 'terragov deploy -f <deployment file>'
+        c.description = 'Deploy a group of projects as specified in a deployment configuration'
+        c.option '-f', '--file STRING', 'Specify deployment file'
+        c.option '-g', '--group STRING', 'Specify group that you wish to deploy'
+        c.option '-c', '--command STRING', 'What command to run: apply, plan or destroy.'
+        c.action do |_args, options|
+
+          group = options.group.nil? ? 'default' : options.group
+
+          run_deployment(options.file, group, options.command)
         end
       end
 
