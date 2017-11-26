@@ -52,7 +52,7 @@ describe Terragov::Cli do
 
       it 'if no expected value exists within config file, abort' do
         ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
-        expect { Terragov::Cli.new.config('stack') }.to raise_error(SystemExit)
+        expect { Terragov::Cli.new.config('stack') }.to raise_error('Must set stack. Use --help for details.')
         ENV['TERRAGOV_CONFIG_FILE'] = nil
       end
 
@@ -65,7 +65,7 @@ describe Terragov::Cli do
     end
 
     it 'if no CLI option, env var or config file set, abort' do
-      expect { Terragov::Cli.new.config('stack') }.to raise_error(SystemExit)
+      expect { Terragov::Cli.new.config('stack') }.to raise_error('Must set stack. Use --help for details.')
     end
   end
 end

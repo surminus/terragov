@@ -103,38 +103,36 @@ module Terragov
     def config(option, file = false, required = true)
       env_var = "TERRAGOV_#{option.upcase}"
       error_message = "Must set #{option}. Use --help for details."
-      if public_send(option)
-        if file
-          return File.expand_path(public_send(option))
-        else
-          return public_send(option)
-        end
-      elsif ENV[env_var]
-        if file
-          return File.expand_path(ENV[env_var])
-        else
-          return ENV[env_var]
-        end
-      elsif !load_config_file.nil?
-        if load_config_file[option].nil?
-          if required
-            abort(error_message)
-          else
-            return false
-          end
-        else
+      begin
+        if public_send(option)
           if file
-            return File.expand_path(load_config_file[option])
+            return File.expand_path(public_send(option))
           else
-            return load_config_file[option]
+            return public_send(option)
           end
-        end
-      else
-        if required
-          abort(error_message)
+        elsif ENV[env_var]
+          if file
+            return File.expand_path(ENV[env_var])
+          else
+            return ENV[env_var]
+          end
+        elsif !load_config_file.nil?
+          if load_config_file[option].nil?
+            raise error_message if required
+            false
+          else
+            if file
+              return File.expand_path(load_config_file[option])
+            else
+              return load_config_file[option]
+            end
+          end
         else
-          return false
+          raise error_message if required
+          false
         end
+      rescue
+        abort(error_message)
       end
     end
 
