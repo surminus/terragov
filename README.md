@@ -63,11 +63,19 @@ The contents should be YAML, and look like the following:
 
 ```
 ---
-environment: 'integration'
-stack: 'blue'
-repo_dir: '~/govuk/govuk-aws'
-data_dir: '~/govuk/govuk-aws-data/data'
+default:
+  environment: 'integration'
+  stack: 'blue'
+  repo_dir: '~/govuk/govuk-aws'
+  data_dir: '~/govuk/govuk-aws-data/data'
+
+app-some-project:
+  stack: 'green'
 ```
+
+Specify default values under the "default" block, and if you need any project specific values, add them under the key of the same name of that project.
+
+Project specific values will take precedence over default values.
 
 ## Optional global arguments
 
