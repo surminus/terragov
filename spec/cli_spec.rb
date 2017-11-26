@@ -43,23 +43,25 @@ describe Terragov::Cli do
       ENV['TERRAGOV_STACK'] = nil
     end
 
-    it 'if config file specified, and value exists within config file, return correct value' do
-      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
-      expect(Terragov::Cli.new.config('stack')).to eq('bar')
-      ENV['TERRAGOV_CONFIG_FILE'] = nil
-    end
+    context 'if config file specified' do
+      it 'if value exists within config file, return correct value' do
+        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
+        expect(Terragov::Cli.new.config('stack')).to eq('bar')
+        ENV['TERRAGOV_CONFIG_FILE'] = nil
+      end
 
-    it 'if config file specified, but no expected value exists within config file, abort' do
-      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
-      expect { Terragov::Cli.new.config('stack') }.to raise_error(SystemExit)
-      ENV['TERRAGOV_CONFIG_FILE'] = nil
-    end
+      it 'if no expected value exists within config file, abort' do
+        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
+        expect { Terragov::Cli.new.config('stack') }.to raise_error(SystemExit)
+        ENV['TERRAGOV_CONFIG_FILE'] = nil
+      end
 
-    it 'if config file specified, but no expected value exists within config file, but is not required, do not abort but return false' do
-      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
-      expect { Terragov::Cli.new.config('stack', false, false) }.to_not raise_error
-      expect(Terragov::Cli.new.config('stack', false, false)).to be false
-      ENV['TERRAGOV_CONFIG_FILE'] = nil
+      it 'if no expected value exists within config file, but is not required, do not abort but return false' do
+        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
+        expect { Terragov::Cli.new.config('stack', false, false) }.to_not raise_error
+        expect(Terragov::Cli.new.config('stack', false, false)).to be false
+        ENV['TERRAGOV_CONFIG_FILE'] = nil
+      end
     end
 
     it 'if no CLI option, env var or config file set, abort' do
