@@ -3,10 +3,15 @@ require 'spec_helper'
 describe Terragov::Cli do
   describe 'load_config_file' do
     mock_hash = {
-      'environment' => 'foo',
-      'stack'       => 'bar',
-      'repo_dir'    => 'spec/stub',
-      'data_dir'    => 'spec/stub/data'
+      'default' => {
+        'environment' => 'foo',
+        'stack'       => 'bar',
+        'repo_dir'    => 'spec/stub',
+        'data_dir'    => 'spec/stub/data'
+      },
+      'app-fake' => {
+        'stack' => 'apples'
+      }
     }
     it 'It returns a hash of values when defined from an env var' do
       ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
@@ -44,10 +49,26 @@ describe Terragov::Cli do
     end
 
     context 'if config file specified' do
-      it 'if value exists within config file, return correct value' do
+      it 'if value exists within config file under default, return correct value' do
         ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
         expect(Terragov::Cli.new.config('stack')).to eq('bar')
         ENV['TERRAGOV_CONFIG_FILE'] = nil
+      end
+
+      it 'if value exists within config file under specified project, return correct value' do
+        ENV['TERRAGOV_PROJECT'] = 'app-fake'
+        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
+        expect(Terragov::Cli.new.config('stack')).to eq('apples')
+        ENV['TERRAGOV_CONFIG_FILE'] = nil
+        ENV['TERRAGOV_PROJECT'] = nil
+      end
+
+      it 'if app specific config available, but nothing for specific value, return default' do
+        ENV['TERRAGOV_PROJECT'] = 'app-fake'
+        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
+        expect(Terragov::Cli.new.config('environment')).to eq('foo')
+        ENV['TERRAGOV_CONFIG_FILE'] = nil
+        ENV['TERRAGOV_PROJECT'] = nil
       end
 
       it 'if no expected value exists within config file, abort' do

@@ -100,47 +100,82 @@ module Terragov
       end
     end
 
+    def config_file_default
+      if load_config_file['default'].nil?
+        return nil
+      else
+        return load_config_file['default']
+      end
+    end
+
+    def config_file_specific_project(project_name)
+      load_config_file[project_name]
+    end
+
+    def config_file(option)
+      # This has to be loaded in seperately to avoid any cyclic dependencies
+      project_name = $project || ENV['TERRAGOV_PROJECT']
+
+      if project_name.nil?
+        if config_file_default.nil?
+          return nil
+        else
+          return config_file_default[option]
+        end
+      else
+        project_config = config_file_specific_project(project_name)
+        if project_config.nil? or project_config[option].nil?
+          return config_file_default[option]
+        else
+          return project_config[option]
+        end
+      end
+    end
+
     def config(option, file = false, required = true)
       env_var = "TERRAGOV_#{option.upcase}"
       error_message = "Must set #{option}. Use --help for details."
-      begin
-        if public_send(option)
-          if file
-            return File.expand_path(public_send(option))
-          else
-            return public_send(option)
-          end
-        elsif ENV[env_var]
-          if file
-            return File.expand_path(ENV[env_var])
-          else
-            return ENV[env_var]
-          end
-        elsif !load_config_file.nil?
-          if load_config_file[option].nil?
-            raise error_message if required
-            false
-          else
-            if file
-              return File.expand_path(load_config_file[option])
-            else
-              return load_config_file[option]
-            end
-          end
+
+      # Load from CLI option
+      if public_send(option)
+        if file
+          return File.expand_path(public_send(option))
         else
-          raise error_message if required
-          false
+          return public_send(option)
         end
-      rescue
-        abort(error_message)
+
+      # Load from environment variable
+      elsif ENV[env_var]
+        if file
+          return File.expand_path(ENV[env_var])
+        else
+          return ENV[env_var]
+        end
+
+      # Load from config file
+      elsif !load_config_file.nil?
+        if config_file(option).nil?
+          abort(error_message) if required
+          return false
+        else
+          if file
+            return File.expand_path(config_file(option))
+          else
+            return config_file(option)
+          end
+        end
+      else
+        abort(error_message) if required
+        return false
       end
     end
 
     def cmd_options
       {
+        # Always load the project name first
+        'project'     => config('project'),
         'environment' => config('environment'),
         'data_dir'    => config('data_dir', true),
-        'project'     => config('project'),
         'stack'       => config('stack'),
         'repo_dir'    => config('repo_dir', true),
         'extra'       => extra
