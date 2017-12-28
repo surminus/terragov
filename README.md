@@ -26,7 +26,8 @@ Command | Description
 --- | ---
 `plan` | Plan Terraform resources
 `apply` | Apply Terraform changes
-`delete` | Delete Terraform resources
+`destroy` | Delete Terraform resources
+`deploy` | Deploy multiple projects as defined by a deployment file
 `clean` | Delete any files that have been left by Terraform
 
 There are several **required** arguments to pass when running `apply`, `plan` or `destroy`:
@@ -86,6 +87,32 @@ Argument | Description
 `verbose` | Be more noisy
 `dryrun` | CLI option is `--dry-run`, but config file and env var is `dryrun` and `TERRAGOV_DRYRUN` respectively
 `skip_git_check` | Do not compare branches between the repo and data directories
+
+## Deployment
+
+You can run multiple projects using the `deploy` command. Create a deployment file with the following:
+
+```
+---
+default:
+  - 'app-one'
+  - 'app-two'
+  - 'app-three'
+
+development:
+  - 'app-foo'
+  - 'app-bar'
+```
+
+It will use whatever is defined in the `default` configuration:
+
+`terragov deploy --file integration.yaml --command plan`
+
+Define a specific group to deploy:
+
+`terragov deploy --file integration.yaml --command plan --group development`
+
+This will use the configuration set by all the methods described previously.
 
 ## Development
 
