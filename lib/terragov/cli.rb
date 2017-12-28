@@ -242,7 +242,7 @@ module Terragov
       abort("Must set command to run: --command") unless command
       abort("Cannot find deployment file: #{file}") unless File.exist?(file)
 
-      deployment_file = YAML.load_file(file)
+      deployment_file = YAML.load_file(File.expand_path(file))
       deployment_config = deployment_file[group]
 
       if deployment_config.nil?

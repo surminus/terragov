@@ -23,6 +23,8 @@ module Terragov
         exit 1
       end
 
+      current_dir = Dir.pwd
+
       Dir.chdir directory
       init(backend, dryrun, verbose)
 
@@ -33,6 +35,8 @@ module Terragov
       full_command = "bash -c 'terraform #{command} #{vars}'"
 
       run(full_command, dryrun, verbose)
+
+      Dir.chdir current_dir
     end
 
     def init(backend_file, dryrun = false, verbose = false)
