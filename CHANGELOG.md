@@ -1,3 +1,8 @@
+## 0.3.1 (2017-12-28)
+
+ - Added a "deploy" command to allow deploying multiple projects in order as defined
+ a "deployment" file
+
 ## 0.3.0 (2017-11-26)
 
  - Updated configuration file to allow default values and project specific values
