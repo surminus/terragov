@@ -237,7 +237,7 @@ module Terragov
       Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir, do_dryrun, be_verbose)
     end
 
-    def run_deployment(file, group, command)
+    def run_deployment(file, group, command, force)
       abort("Must set deployment file: --file") unless file
       abort("Must set command to run: --command") unless command
       abort("Cannot find deployment file: #{file}") unless File.exist?(file)
@@ -250,11 +250,19 @@ module Terragov
       end
 
       if command == 'plan' || command == 'apply'
+        if force && command == 'apply'
+          command = "#{command} -auto-approve"
+        end
+
         deployment_config.each do |proj|
           $project = proj
           run_terraform_cmd(command, nil, true)
         end
       elsif command == 'destroy'
+        if force
+          command = "#{command} -force"
+        end
+
         deployment_config.reverse.each do |proj|
           $project = proj
           run_terraform_cmd(command, nil, true)
@@ -268,7 +276,7 @@ module Terragov
       command :plan do |c|
         c.syntax = 'terragov plan'
         c.description = 'Runs a plan of your code'
-        c.action do |_args, _options|
+        c.action do |_args, options|
           run_terraform_cmd(c.name)
         end
       end
@@ -276,8 +284,13 @@ module Terragov
       command :apply do |c|
         c.syntax = 'terragov apply'
         c.description = 'Apply your code'
-        c.action do |_args, _options|
-          run_terraform_cmd(c.name)
+        c.option '--force', 'Force apply'
+        c.action do |_args, options|
+          if options.force
+            run_terraform_cmd("#{c.name} -auto-approve")
+          else
+            run_terraform_cmd(c.name)
+          end
         end
       end
 
@@ -300,11 +313,12 @@ module Terragov
         c.option '-f', '--file STRING', 'Specify deployment file'
         c.option '-g', '--group STRING', 'Specify group that you wish to deploy'
         c.option '-c', '--command STRING', 'What command to run: apply, plan or destroy.'
+        c.option '--force', 'Force apply or destroy'
         c.action do |_args, options|
 
           group = options.group.nil? ? 'default' : options.group
 
-          run_deployment(options.file, group, options.command)
+          run_deployment(options.file, group, options.command, options.force)
         end
       end
 
