@@ -1,3 +1,8 @@
+## 0.3.2 (2017-12-29)
+
+ - Allow force when applying on Terraform versions >=0.11
+ - Allow force apply and destroy on deployments on Terraform versions >=0.11
+
 ## 0.3.1 (2017-12-28)
 
  - Added a "deploy" command to allow deploying multiple projects in order as defined
