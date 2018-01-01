@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'terragov/buildpaths'
 require 'terragov/cleaner'
 require 'terragov/cli'

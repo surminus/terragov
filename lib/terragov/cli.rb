@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'commander'
 require 'yaml'
 require 'highline'
@@ -102,9 +104,9 @@ module Terragov
 
     def config_file_default
       if load_config_file['default'].nil?
-        return nil
+        nil
       else
-        return load_config_file['default']
+        load_config_file['default']
       end
     end
 
@@ -124,7 +126,7 @@ module Terragov
         end
       else
         project_config = config_file_specific_project(project_name)
-        if project_config.nil? or project_config[option].nil?
+        if project_config.nil? || project_config[option].nil?
           return config_file_default[option]
         else
           return project_config[option]
@@ -174,17 +176,13 @@ module Terragov
       cmd_hash = {}
 
       # Always load the project name first
-      unless deployment
-        cmd_hash = { 'project' => config('project') }
-      end
+      cmd_hash = { 'project' => config('project') } unless deployment
 
-      cmd_hash.merge({
-        'environment' => config('environment'),
-        'data_dir'    => config('data_dir', true),
-        'stack'       => config('stack'),
-        'repo_dir'    => config('repo_dir', true),
-        'extra'       => extra
-      })
+      cmd_hash.merge('environment' => config('environment'),
+                     'data_dir'    => config('data_dir', true),
+                     'stack'       => config('stack'),
+                     'repo_dir'    => config('repo_dir', true),
+                     'extra'       => extra)
     end
 
     def git_compare_repo_and_data(skip = false)
@@ -204,7 +202,7 @@ module Terragov
 
       unless skip
         branches.each do |name, branch|
-          unless branch =~ /^master$/
+          unless branch.match?(/^master$/)
             exit unless HighLine.agree("#{name} not on 'master' branch, continue on branch '#{branch}'?")
           end
         end
@@ -222,7 +220,7 @@ module Terragov
       backend  = paths[:backend_file]
       project_dir = paths[:project_dir]
 
-      options = Hash.new
+      options = {}
       %w[verbose dryrun].each do |opts|
         options[opts] = config(opts, false, false)
       end
@@ -239,37 +237,33 @@ module Terragov
     end
 
     def run_deployment(file, group, command, force)
-      abort("Must set deployment file: --file") unless file
-      abort("Must set command to run: --command") unless command
+      abort('Must set deployment file: --file') unless file
+      abort('Must set command to run: --command') unless command
       abort("Cannot find deployment file: #{file}") unless File.exist?(file)
 
       deployment_file = YAML.load_file(File.expand_path(file))
       deployment_config = deployment_file[group]
 
       if deployment_config.nil?
-        abort("Deployment configuration must be an array of projects to run")
+        abort('Deployment configuration must be an array of projects to run')
       end
 
       if command == 'plan' || command == 'apply'
-        if force && command == 'apply'
-          command = "#{command} -auto-approve"
-        end
+        command = "#{command} -auto-approve" if force && command == 'apply'
 
         deployment_config.each do |proj|
           $project = proj
           run_terraform_cmd(command, nil, true)
         end
       elsif command == 'destroy'
-        if force
-          command = "#{command} -force"
-        end
+        command = "#{command} -force" if force
 
         deployment_config.reverse.each do |proj|
           $project = proj
           run_terraform_cmd(command, nil, true)
         end
       else
-        abort("Command must be apply, plan or destroy")
+        abort('Command must be apply, plan or destroy')
       end
     end
 
@@ -277,7 +271,7 @@ module Terragov
       command :plan do |c|
         c.syntax = 'terragov plan'
         c.description = 'Runs a plan of your code'
-        c.action do |_args, options|
+        c.action do |_args, _options|
           run_terraform_cmd(c.name)
         end
       end
@@ -316,7 +310,6 @@ module Terragov
         c.option '-c', '--command STRING', 'What command to run: apply, plan or destroy.'
         c.option '--force', 'Force apply or destroy'
         c.action do |_args, options|
-
           group = options.group.nil? ? 'default' : options.group
 
           run_deployment(options.file, group, options.command, options.force)
@@ -334,7 +327,7 @@ module Terragov
 
           files_to_delete = [
             /\.terraform$/,
-            /terraform\.tfstate\.backup/,
+            /terraform\.tfstate\.backup/
           ]
 
           path = config('repo_dir', true)

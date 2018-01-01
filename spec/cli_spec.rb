@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 describe Terragov::Cli do
@@ -79,14 +81,23 @@ describe Terragov::Cli do
 
       it 'if no expected value exists within config file, but is not required, do not abort but return false' do
         ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
-        expect { Terragov::Cli.new.config('stack', false, false) }.to_not raise_error
-        expect(Terragov::Cli.new.config('stack', false, false)).to be false
+        expect do
+          Terragov::Cli.new.config(
+            'stack', false, false
+          )
+        end.to_not raise_error
+        expect do
+          Terragov::Cli.new.config(
+            'stack', false, false
+          )
+        end.to be false
         ENV['TERRAGOV_CONFIG_FILE'] = nil
       end
     end
 
     it 'if no CLI option, env var or config file set, abort' do
-      expect { Terragov::Cli.new.config('stack') }.to raise_error('Must set stack. Use --help for details.')
+      expect { Terragov::Cli.new.config('stack') }.to
+      raise_error('Must set stack. Use --help for details.')
     end
   end
 end
