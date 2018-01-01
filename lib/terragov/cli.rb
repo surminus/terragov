@@ -222,19 +222,20 @@ module Terragov
       backend  = paths[:backend_file]
       project_dir = paths[:project_dir]
 
-      be_verbose = config('verbose', false, false)
-
-      do_dryrun = config('dryrun', false, false)
+      options = Hash.new
+      %w[verbose dryrun].each do |opts|
+        options[opts] = config(opts, false, false)
+      end
 
       unless deployment
         skip_check = config('skip_git_check', false, false)
         git_compare_repo_and_data(skip_check)
       end
 
-      puts cmd_options.to_yaml if be_verbose
+      puts cmd_options.to_yaml if options['verbose']
 
       cmd = "#{cmd} #{opt}" if opt
-      Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir, do_dryrun, be_verbose)
+      Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir, options)
     end
 
     def run_deployment(file, group, command, force)
