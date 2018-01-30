@@ -16,9 +16,13 @@ describe Terragov::BuildPaths do
         terraform_dir: 'spec/stub/terraform',
         project_dir: 'spec/stub/terraform/projects/myproject',
         common_data_dir: 'spec/stub/data/common/dev',
+        all_env_common_data: 'spec/stub/data/common/common.tfvars',
+        all_env_stack_common_data: 'spec/stub/data/common/mystack.tfvars',
         common_data: 'spec/stub/data/common/dev/common.tfvars',
         stack_common_data: 'spec/stub/data/common/dev/mystack.tfvars',
         project_data_dir: 'spec/stub/data/myproject/dev',
+        all_env_common_project_data: 'spec/stub/data/myproject/common.tfvars',
+        all_env_stack_project_data: 'spec/stub/data/myproject/mystack.tfvars',
         common_project_data: 'spec/stub/data/myproject/dev/common.tfvars',
         secret_common_project_data: 'spec/stub/data/myproject/dev/common.secret.tfvars',
         stack_project_data: 'spec/stub/data/myproject/dev/mystack.tfvars',
@@ -46,8 +50,12 @@ describe Terragov::BuildPaths do
   describe 'data_paths' do
     it 'takes a hash and returns array of paths' do
       expect(Terragov::BuildPaths.new.data_paths(options)).to include(
+        'spec/stub/data/common/common.tfvars',
+        'spec/stub/data/common/mystack.tfvars',
         'spec/stub/data/common/dev/common.tfvars',
         'spec/stub/data/common/dev/mystack.tfvars',
+        'spec/stub/data/myproject/common.tfvars',
+        'spec/stub/data/myproject/mystack.tfvars',
         'spec/stub/data/myproject/dev/common.tfvars',
         'spec/stub/data/myproject/dev/common.secret.tfvars',
         'spec/stub/data/myproject/dev/mystack.tfvars',

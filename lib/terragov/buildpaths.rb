@@ -11,17 +11,21 @@ module Terragov
       extra   = options['extra']
 
       # Construct variables
-      terraform_dir              = File.join(repo_dir, 'terraform')
-      project_dir                = File.join(terraform_dir, "projects/#{project}")
-      backend_file               = File.join(project_dir, "#{environment}.#{stack}.backend")
-      common_data_dir            = File.join(data_dir, "common/#{environment}")
-      common_data                = File.join(common_data_dir, 'common.tfvars')
-      stack_common_data          = File.join(common_data_dir, "#{stack}.tfvars")
-      project_data_dir           = File.join(data_dir, "#{project}/#{environment}")
-      common_project_data        = File.join(project_data_dir, 'common.tfvars')
-      secret_common_project_data = File.join(project_data_dir, 'common.secret.tfvars')
-      stack_project_data         = File.join(project_data_dir, "#{stack}.tfvars")
-      secret_project_data        = File.join(project_data_dir, "#{stack}.secret.tfvars")
+      terraform_dir               = File.join(repo_dir, 'terraform')
+      project_dir                 = File.join(terraform_dir, "projects/#{project}")
+      backend_file                = File.join(project_dir, "#{environment}.#{stack}.backend")
+      common_data_dir             = File.join(data_dir, "common/#{environment}")
+      all_env_common_data         = File.join(data_dir, 'common', 'common.tfvars')
+      all_env_stack_common_data   = File.join(data_dir, 'common', "#{stack}.tfvars")
+      common_data                 = File.join(common_data_dir, 'common.tfvars')
+      stack_common_data           = File.join(common_data_dir, "#{stack}.tfvars")
+      project_data_dir            = File.join(data_dir, "#{project}/#{environment}")
+      all_env_common_project_data = File.join(data_dir, project, 'common.tfvars')
+      all_env_stack_project_data  = File.join(data_dir, project, "#{stack}.tfvars")
+      common_project_data         = File.join(project_data_dir, 'common.tfvars')
+      secret_common_project_data  = File.join(project_data_dir, 'common.secret.tfvars')
+      stack_project_data          = File.join(project_data_dir, "#{stack}.tfvars")
+      secret_project_data         = File.join(project_data_dir, "#{stack}.secret.tfvars")
 
       # Return hash to enable testing
       data_paths = {
@@ -29,9 +33,13 @@ module Terragov
         project_dir: project_dir,
         backend_file: backend_file,
         common_data_dir: common_data_dir,
+        all_env_common_data: all_env_common_data,
+        all_env_stack_common_data: all_env_stack_common_data,
         common_data: common_data,
         stack_common_data: stack_common_data,
         project_data_dir: project_data_dir,
+        all_env_common_project_data: all_env_common_project_data,
+        all_env_stack_project_data: all_env_stack_project_data,
         common_project_data: common_project_data,
         secret_common_project_data: secret_common_project_data,
         stack_project_data: stack_project_data,
@@ -52,8 +60,12 @@ module Terragov
       # order to Terraform as that creates the hierarchy for overrides
       base = self.base(options)
       paths = [
+        base[:all_env_common_data],
+        base[:all_env_stack_common_data],
         base[:common_data],
         base[:stack_common_data],
+        base[:all_env_common_project_data],
+        base[:all_env_stack_project_data],
         base[:common_project_data],
         base[:secret_common_project_data],
         base[:stack_project_data],
