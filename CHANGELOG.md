@@ -1,3 +1,7 @@
+## 0.3.3 (2018-01-30)
+
+ - Allow full hierachy use of data across all environments
+
 ## 0.3.2 (2017-12-29)
 
  - Allow force when applying on Terraform versions >=0.11
