@@ -1,0 +1,4 @@
+default:
+  - myproject
+  - second-project
+  - third-project
