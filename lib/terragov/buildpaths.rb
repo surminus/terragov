@@ -48,11 +48,7 @@ module Terragov
     end
 
     def data_validation(path)
-      if File.exist?(path)
-        true
-      else
-        false
-      end
+      File.exist?(path)
     end
 
     def data_paths(options = {})
@@ -86,7 +82,7 @@ module Terragov
         paths.each do |path|
           puts path
         end
-        return false
+        false
       end
     end
 
@@ -101,7 +97,6 @@ module Terragov
       $full_vars = []
       data_paths(options).each do |path|
         if data_validation(path)
-          # TODO: write sops class
           if path == paths[:secret_project_data] || path == paths[:secret_common_project_data]
             $full_vars << "-var-file <(sops -d #{path})"
           else
