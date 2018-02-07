@@ -14,8 +14,10 @@ module Terragov
     def execute(command, vars, backend, directory, dryrun = false, verbose = false)
       packages = %w[terraform sops]
 
-      packages.each do |pkg|
-        package_check(pkg)
+      unless dryrun
+        packages.each do |pkg|
+          package_check(pkg)
+        end
       end
 
       if command == 'init'
