@@ -153,7 +153,8 @@ module Terragov
         abort("Deployment configuration must be an array of projects to run")
       end
 
-      if command == 'plan' || command == 'apply'
+      case command
+      when 'plan', 'apply'
         if force && command == 'apply'
           command = "#{command} -auto-approve"
         end
@@ -162,7 +163,7 @@ module Terragov
           $project = proj
           run_terraform_cmd(command, nil, true)
         end
-      elsif command == 'destroy'
+      when 'destroy'
         if force
           command = "#{command} -force"
         end
