@@ -19,20 +19,20 @@ module Terragov
     end
 
     def config_file(option)
+      # If project name not specified in config, return default settings
       if project_name.nil?
-        if config_file_default.nil?
-          return nil
-        else
-          return config_file_default[option]
-        end
-      else
-        project_config = config_file_specific_project(project_name)
-        if project_config.nil? or project_config[option].nil?
-          return config_file_default[option]
-        else
-          return project_config[option]
-        end
+        return nil if config_file_default.nil?
+        return config_file_default[option]
       end
+
+      # If project specified, but no config found for that option return default
+      project_config = config_file_specific_project(project_name)
+      if project_config.nil? or project_config[option].nil?
+        return config_file_default[option]
+      end
+
+      # Otherwise return the value for that option
+      project_config[option]
     end
 
     def lookup(settings = {})
