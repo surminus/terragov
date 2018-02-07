@@ -50,8 +50,8 @@ module Terragov
         @verbose = verbose || false
       end
 
-      global_option('--dry-run', 'Dry run mode', 'Output the commands to run, but do not run them') do |dryrun|
-        @dryrun = dryrun || false
+      global_option('--test', 'Dry run mode', 'Output the commands to run, but do not run them') do |test|
+        @test = test || false
       end
 
       global_option('--skip-git-check', 'Skip git check', 'Do not check the status of git repositories') do |skip_git_check|
@@ -130,7 +130,7 @@ module Terragov
         vars: Terragov::BuildPaths.new.build_command(cmd_options),
         backend: paths[:backend_file],
         directory: paths[:project_dir],
-        dryrun: Terragov::Config.new.lookup({name: 'dryrun', required: false, cli: @dryrun}),
+        test: Terragov::Config.new.lookup({name: 'test', required: false, cli: @test}),
         verbose: Terragov::Config.new.lookup({name: 'verbose', required: false, cli: @verbose}),
       }
 

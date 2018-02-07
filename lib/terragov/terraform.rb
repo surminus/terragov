@@ -15,14 +15,14 @@ module Terragov
       # Schema:
       # {
       # command: which command to run
-      # dryrun: set to true for a dry run
+      # test: set to true to output commands to run, used for testing
       # verbose: set to true for more output
       # directory: main repository directory
       # backend: backend file
       # vars: data directory
       # }
       default = {
-        dryrun: false,
+        test: false,
         verbose: false,
       }
 
@@ -30,7 +30,7 @@ module Terragov
 
       packages = %w[terraform sops]
 
-      unless args[:dryrun]
+      unless args[:test]
         packages.each do |pkg|
           package_check(pkg)
         end
@@ -43,8 +43,8 @@ module Terragov
 
       current_dir = Dir.pwd
 
-      Dir.chdir args[:directory] unless args[:dryrun]
-      init(args[:backend], args[:dryrun], args[:verbose])
+      Dir.chdir args[:directory] unless args[:test]
+      init(args[:backend], args[:test], args[:verbose])
 
       if args[:command] == 'plan'
         command = 'plan -detailed-exitcode'
@@ -54,18 +54,18 @@ module Terragov
 
       full_command = "bash -c 'terraform #{command} #{args[:vars]}'"
 
-      run(full_command, args[:dryrun], args[:verbose])
+      run(full_command, args[:test], args[:verbose])
 
-      Dir.chdir current_dir unless args[:dryrun]
+      Dir.chdir current_dir unless args[:test]
     end
 
-    def init(backend_file, dryrun = false, verbose = false)
+    def init(backend_file, test = false, verbose = false)
       init_cmd = "terraform init -backend-config #{backend_file}"
-      run(init_cmd, dryrun, verbose)
+      run(init_cmd, test, verbose)
     end
 
-    def run(command, dryrun = false, verbose = false)
-      if dryrun
+    def run(command, test = false, verbose = false)
+      if test
         puts command
       else
         puts command if verbose

@@ -10,7 +10,7 @@ describe Terragov::Cli do
     describe 'plan' do
       default_command = %w(
         bin/terragov
-        --dry-run
+        --test
         --skip-git-check
         plan
       )
@@ -84,7 +84,7 @@ describe Terragov::Cli do
     describe 'apply' do
       default_command = %w(
         bin/terragov
-        --dry-run
+        --test
         --skip-git-check
         --force
         apply
@@ -123,7 +123,7 @@ describe Terragov::Cli do
     describe 'destroy' do
       default_command = %w(
         bin/terragov
-        --dry-run
+        --test
         --skip-git-check
         --force
         destroy
@@ -162,7 +162,7 @@ describe Terragov::Cli do
     describe 'deploy' do
       default_command = %w(
         bin/terragov
-        --dry-run
+        --test
         --skip-git-check
         --force
         deploy

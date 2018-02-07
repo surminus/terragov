@@ -85,7 +85,7 @@ These may be set in the same way as described above, with the same precedence, b
 Argument | Description
 --- | ---
 `verbose` | Be more noisy
-`dryrun` | CLI option is `--dry-run`, but config file and env var is `dryrun` and `TERRAGOV_DRYRUN` respectively
+`test` | Output commands, but do not run anything. Useful for tests.
 `skip_git_check` | Do not compare branches between the repo and data directories
 
 ## Deployment
