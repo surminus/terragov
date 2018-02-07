@@ -1,7 +1,7 @@
 ---
 default:
-  environment: 'foo'
-  stack: 'bar'
+  environment: 'dev'
+  stack: 'mystack'
   repo_dir: 'spec/stub'
   data_dir: 'spec/stub/data'
 

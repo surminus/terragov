@@ -1,92 +1,121 @@
 require 'spec_helper'
 
+# A series of end-to-end tests that ensures the validity of what we expect
+# to output
+
 describe Terragov::Cli do
-  describe 'load_config_file' do
-    mock_hash = {
-      'default' => {
-        'environment' => 'foo',
-        'stack'       => 'bar',
-        'repo_dir'    => 'spec/stub',
-        'data_dir'    => 'spec/stub/data'
-      },
-      'app-fake' => {
-        'stack' => 'apples'
-      }
-    }
-    it 'It returns a hash of values when defined from an env var' do
-      ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
-      config = Terragov::Cli.new.load_config_file
-      expect(config).to include(mock_hash)
-      ENV['TERRAGOV_CONFIG_FILE'] = nil
-    end
+  describe 'run' do
+    describe 'plan' do
+      it 'everything specified from CLI options' do
+        default_command = %w(
+          bin/terragov
+          --dry-run
+          --skip-git-check
+          plan
+        )
 
-    it 'It returns a hash of values when defined by CLI option' do
-      $config_file = 'spec/stub/myconfig.yml'
-      config = Terragov::Cli.new.load_config_file
-      expect(config).to include(mock_hash)
-      $config_file = nil
-    end
-  end
+        command_options = [
+          '-d spec/stub/data',
+          '-r spec/stub',
+          '-p myproject',
+          '-s mystack',
+          '-e dev',
+        ]
 
-  describe 'config' do
-    it 'if set from CLI options, it should return correct value' do
-      $stack = 'mystack'
-      expect(Terragov::Cli.new.config('stack')).to eq('mystack')
-      $stack = nil
-    end
+        default_init_output = [
+          'terraform init -backend-config',
+          "#{File.join(Dir.pwd, 'spec/stub/terraform/projects/myproject/dev.mystack.backend')}\n"
+        ]
+        default_plan_output = [
+          "bash -c 'terraform plan -detailed-exitcode",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/common/dev/common.tfvars')}",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/common/dev/mystack.tfvars')}",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/common.tfvars')}",
+          "-var-file <(sops -d #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/common.secret.tfvars')})",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/mystack.tfvars')}",
+          "-var-file <(sops -d #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/mystack.secret.tfvars')}) '\n"
+        ]
+        expected_output = default_init_output.join(" ") + default_plan_output.join(" ")
+        command = default_command.join(" ") + " " + command_options.join(" ")
+        expect {
+          system(command)
+        }.to output(expected_output).to_stdout_from_any_process
+      end
+      it 'everything specified from ENV VAR options' do
+        default_command = %w(
+          bin/terragov
+          --dry-run
+          --skip-git-check
+          plan
+        )
 
-    it 'if set from CLI options and is a file, it should return correct value' do
-      $repo_dir = 'spec/stub'
-      expected = File.expand_path($repo_dir)
-      expect(Terragov::Cli.new.config('repo_dir', true)).to eq(expected)
-      $repo_dir = nil
-    end
+        ENV['TERRAGOV_DATA_DIR'] = 'spec/stub/data'
+        ENV['TERRAGOV_REPO_DIR'] = 'spec/stub'
+        ENV['TERRAGOV_STACK'] = 'mystack'
+        ENV['TERRAGOV_ENVIRONMENT'] = 'dev'
 
-    it 'if set from environment variable options, it should return correct value' do
-      ENV['TERRAGOV_STACK'] = 'mystack'
-      expect(Terragov::Cli.new.config('stack')).to eq('mystack')
-      ENV['TERRAGOV_STACK'] = nil
-    end
+        command_options = [
+          '-p myproject',
+        ]
 
-    context 'if config file specified' do
-      it 'if value exists within config file under default, return correct value' do
+        default_init_output = [
+          'terraform init -backend-config',
+          "#{File.join(Dir.pwd, 'spec/stub/terraform/projects/myproject/dev.mystack.backend')}\n"
+        ]
+        default_plan_output = [
+          "bash -c 'terraform plan -detailed-exitcode",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/common/dev/common.tfvars')}",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/common/dev/mystack.tfvars')}",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/common.tfvars')}",
+          "-var-file <(sops -d #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/common.secret.tfvars')})",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/mystack.tfvars')}",
+          "-var-file <(sops -d #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/mystack.secret.tfvars')}) '\n"
+        ]
+        expected_output = default_init_output.join(" ") + default_plan_output.join(" ")
+        command = default_command.join(" ") + " " + command_options.join(" ")
+        expect {
+          system(command)
+        }.to output(expected_output).to_stdout_from_any_process
+
+        ENV['TERRAGOV_DATA_DIR'] = nil
+        ENV['TERRAGOV_REPO_DIR'] = nil
+        ENV['TERRAGOV_STACK'] = nil
+        ENV['TERRAGOV_ENVIRONMENT'] = nil
+      end
+      it 'everything specified from config file' do
+        default_command = %w(
+          bin/terragov
+          --dry-run
+          --skip-git-check
+          plan
+        )
         ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
-        expect(Terragov::Cli.new.config('stack')).to eq('bar')
+
+        command_options = [
+          '-p myproject',
+        ]
+
+        default_init_output = [
+          'terraform init -backend-config',
+          "#{File.join(Dir.pwd, 'spec/stub/terraform/projects/myproject/dev.mystack.backend')}\n"
+        ]
+        default_plan_output = [
+          "bash -c 'terraform plan -detailed-exitcode",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/common/dev/common.tfvars')}",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/common/dev/mystack.tfvars')}",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/common.tfvars')}",
+          "-var-file <(sops -d #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/common.secret.tfvars')})",
+          "-var-file #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/mystack.tfvars')}",
+          "-var-file <(sops -d #{File.join(Dir.pwd, 'spec/stub/data/myproject/dev/mystack.secret.tfvars')}) '\n"
+        ]
+        expected_output = default_init_output.join(" ") + default_plan_output.join(" ")
+        command = default_command.join(" ") + " " + command_options.join(" ")
+        expect {
+          system(command)
+        }.to output(expected_output).to_stdout_from_any_process
+
         ENV['TERRAGOV_CONFIG_FILE'] = nil
       end
-
-      it 'if value exists within config file under specified project, return correct value' do
-        ENV['TERRAGOV_PROJECT'] = 'app-fake'
-        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
-        expect(Terragov::Cli.new.config('stack')).to eq('apples')
-        ENV['TERRAGOV_CONFIG_FILE'] = nil
-        ENV['TERRAGOV_PROJECT'] = nil
-      end
-
-      it 'if app specific config available, but nothing for specific value, return default' do
-        ENV['TERRAGOV_PROJECT'] = 'app-fake'
-        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
-        expect(Terragov::Cli.new.config('environment')).to eq('foo')
-        ENV['TERRAGOV_CONFIG_FILE'] = nil
-        ENV['TERRAGOV_PROJECT'] = nil
-      end
-
-      it 'if no expected value exists within config file, abort' do
-        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
-        expect { Terragov::Cli.new.config('stack') }.to raise_error('Must set stack. Use --help for details.')
-        ENV['TERRAGOV_CONFIG_FILE'] = nil
-      end
-
-      it 'if no expected value exists within config file, but is not required, do not abort but return false' do
-        ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/badconfig.yml'
-        expect { Terragov::Cli.new.config('stack', false, false) }.to_not raise_error
-        expect(Terragov::Cli.new.config('stack', false, false)).to be false
-        ENV['TERRAGOV_CONFIG_FILE'] = nil
-      end
-    end
-
-    it 'if no CLI option, env var or config file set, abort' do
-      expect { Terragov::Cli.new.config('stack') }.to raise_error('Must set stack. Use --help for details.')
     end
   end
 end

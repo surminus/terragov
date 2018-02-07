@@ -1,4 +1,5 @@
 require 'terragov/buildpaths'
+require 'terragov/config.rb'
 require 'terragov/cleaner'
 require 'terragov/cli'
 require 'terragov/git'
