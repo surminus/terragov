@@ -1,3 +1,11 @@
+## 0.4.0 (2018-02-07)
+
+ - Added end to end tests
+ - Added further tests to Terraform class
+ - Code tidy
+ - Changed "dryrun" flag to "test"
+ - Broke out logic to separate Config class
+
 ## 0.3.3 (2018-01-30)
 
  - Allow full hierachy use of data across all environments
