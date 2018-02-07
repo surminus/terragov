@@ -4,8 +4,8 @@ describe Terragov::Config do
   describe 'load_config_file' do
     mock_hash = {
       'default' => {
-        'environment' => 'foo',
-        'stack'       => 'bar',
+        'environment' => 'dev',
+        'stack'       => 'mystack',
         'repo_dir'    => 'spec/stub',
         'data_dir'    => 'spec/stub/data'
       },
@@ -58,7 +58,7 @@ describe Terragov::Config do
       it 'if value exists within config file under default, return correct value' do
         hash = { name: 'stack' }
         ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
-        expect(Terragov::Config.new.lookup(hash)).to eq('bar')
+        expect(Terragov::Config.new.lookup(hash)).to eq('mystack')
         ENV['TERRAGOV_CONFIG_FILE'] = nil
       end
 
@@ -75,7 +75,7 @@ describe Terragov::Config do
         hash = { name: 'environment' }
         ENV['TERRAGOV_PROJECT'] = 'app-fake'
         ENV['TERRAGOV_CONFIG_FILE'] = 'spec/stub/myconfig.yml'
-        expect(Terragov::Config.new.lookup(hash)).to eq('foo')
+        expect(Terragov::Config.new.lookup(hash)).to eq('dev')
         ENV['TERRAGOV_CONFIG_FILE'] = nil
         ENV['TERRAGOV_PROJECT'] = nil
       end
