@@ -120,25 +120,28 @@ module Terragov
       end
     end
 
-    def run_terraform_cmd(cmd, opt = nil, deployment = false)
+    def run_terraform_cmd(cmd, deployment = false)
+      # Create a hash based on method above
       paths = Terragov::BuildPaths.new.base(cmd_options)
-      varfiles = Terragov::BuildPaths.new.build_command(cmd_options)
-      backend  = paths[:backend_file]
-      project_dir = paths[:project_dir]
 
-      be_verbose = Terragov::Config.new.lookup({name: 'verbose', required: false, cli: @verbose})
-
-      do_dryrun = Terragov::Config.new.lookup({name: 'dryrun', required: false, cli: @dryrun})
+      # Construct the hash to pass to the Terraform class
+      terraform_args = {
+        command: cmd,
+        vars: Terragov::BuildPaths.new.build_command(cmd_options),
+        backend: paths[:backend_file],
+        directory: paths[:project_dir],
+        dryrun: Terragov::Config.new.lookup({name: 'dryrun', required: false, cli: @dryrun}),
+        verbose: Terragov::Config.new.lookup({name: 'verbose', required: false, cli: @verbose}),
+      }
 
       unless deployment
         skip_check = Terragov::Config.new.lookup({name: 'skip_git_check', required: false, cli: @skip_git_check})
         git_compare_repo_and_data(skip_check)
       end
 
-      puts cmd_options.to_yaml if be_verbose
+      puts cmd_options.to_yaml if terraform_args[:verbose]
 
-      cmd = "#{cmd} #{opt}" if opt
-      Terragov::Terraform.new.execute(cmd, varfiles, backend, project_dir, do_dryrun, be_verbose)
+      Terragov::Terraform.new.execute(terraform_args)
     end
 
     def run_deployment(file, group, command, force)
@@ -161,7 +164,7 @@ module Terragov
 
         deployment_config.each do |proj|
           $project = proj
-          run_terraform_cmd(command, nil, true)
+          run_terraform_cmd(command, true)
         end
       when 'destroy'
         if force
@@ -170,7 +173,7 @@ module Terragov
 
         deployment_config.reverse.each do |proj|
           $project = proj
-          run_terraform_cmd(command, nil, true)
+          run_terraform_cmd(command, true)
         end
       else
         abort("Command must be apply, plan or destroy")

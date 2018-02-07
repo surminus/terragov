@@ -11,34 +11,52 @@ module Terragov
       end
     end
 
-    def execute(command, vars, backend, directory, dryrun = false, verbose = false)
+    def execute(_args = {})
+      # Schema:
+      # {
+      # command: which command to run
+      # dryrun: set to true for a dry run
+      # verbose: set to true for more output
+      # directory: main repository directory
+      # backend: backend file
+      # vars: data directory
+      # }
+      default = {
+        dryrun: false,
+        verbose: false,
+      }
+
+      args = default.merge(_args)
+
       packages = %w[terraform sops]
 
-      unless dryrun
+      unless args[:dryrun]
         packages.each do |pkg|
           package_check(pkg)
         end
       end
 
-      if command == 'init'
+      if args[:command] == 'init'
         puts "Running 'init' is not required as it is applied for each command"
         exit 1
       end
 
       current_dir = Dir.pwd
 
-      Dir.chdir directory
-      init(backend, dryrun, verbose)
+      Dir.chdir args[:directory] unless args[:dryrun]
+      init(args[:backend], args[:dryrun], args[:verbose])
 
-      if command == 'plan'
+      if args[:command] == 'plan'
         command = 'plan -detailed-exitcode'
+      else
+        command = args[:command]
       end
 
-      full_command = "bash -c 'terraform #{command} #{vars}'"
+      full_command = "bash -c 'terraform #{command} #{args[:vars]}'"
 
-      run(full_command, dryrun, verbose)
+      run(full_command, args[:dryrun], args[:verbose])
 
-      Dir.chdir current_dir
+      Dir.chdir current_dir unless args[:dryrun]
     end
 
     def init(backend_file, dryrun = false, verbose = false)
