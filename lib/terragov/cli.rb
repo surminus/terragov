@@ -100,30 +100,22 @@ module Terragov
     end
 
     def git_compare_repo_and_data(skip = false)
-      git_helper = Terragov::Git.new
-      # FIXME: this is confusing as we want to check the repository git status from
-      # the root, but the "data" directory is one level down in the repository
-      repo_dir_root = cmd_options['repo_dir']
-      data_dir_root = File.expand_path(File.join(cmd_options['data_dir'], '../'))
-
-      repo_dir_branch = git_helper.branch_name(repo_dir_root)
-      data_dir_branch = git_helper.branch_name(data_dir_root)
-
-      branches = {
-        'repo_dir' => repo_dir_branch,
-        'data_dir' => data_dir_branch
-      }
-
       unless skip
+        git_helper = Terragov::Git.new
+        # FIXME: this is confusing as we want to check the repository git status from
+        # the root, but the "data" directory is one level down in the repository
+        repo_dir_root = cmd_options['repo_dir']
+        data_dir_root = File.expand_path(File.join(cmd_options['data_dir'], '../'))
+
+        branches = {
+          'repo_dir' => git_helper.branch_name(repo_dir_root),
+          'data_dir' => git_helper.branch_name(data_dir_root),
+        }
+
         branches.each do |name, branch|
           unless branch =~ /^master$/
             exit unless HighLine.agree("#{name} not on 'master' branch, continue on branch '#{branch}'?")
           end
-        end
-
-        unless git_helper.compare_branch(repo_dir_root, data_dir_root)
-          puts "Warning: repo_dir(#{repo_dir_branch}) and data_dir(#{data_dir_branch}) on different branches"
-          exit unless HighLine.agree('Do you wish to continue?')
         end
       end
     end
